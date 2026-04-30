@@ -1,0 +1,91 @@
+# Profile: Minecraft Paper Plugin (Kotlin / Gradle Kotlin DSL)
+# Pre-filled for multi-module Paper plugin projects written in Kotlin.
+# Copy this to my-project.yaml and fill in the project-specific sections.
+
+project:
+  name: "My Paper Plugin"
+  description: "Minecraft Paper server plugin built with Kotlin"
+
+stack:
+  language: kotlin
+  profile: minecraft-paper-plugin
+  build_command: "./gradlew"
+  compile_command: "./gradlew compileKotlin"
+  lint_command: "./gradlew detekt ktlintCheck"
+  test_command: "./gradlew :[module]:test"
+
+modules:
+  - name: plugin
+    gradle_module: ":plugin"
+    source_root: "plugin/src/main/kotlin/com/example/plugin/"
+    test_root: "plugin/src/test/kotlin/com/example/plugin/"
+    docs_path: "docs/plugin/"
+    responsibility: "Paper plugin entrypoint, commands, listeners"
+
+  - name: core
+    gradle_module: ":core"
+    source_root: "core/src/main/kotlin/com/example/plugin/"
+    test_root: "core/src/test/kotlin/com/example/plugin/"
+    docs_path: "docs/core/"
+    responsibility: "Core game logic, mechanics, data models"
+
+  - name: api
+    gradle_module: ":api"
+    source_root: "api/src/main/kotlin/com/example/plugin/"
+    test_root: "api/src/test/kotlin/com/example/plugin/"
+    docs_path: "docs/api/"
+    responsibility: "Public API for other plugins to integrate with"
+
+provider:
+  name: ollama-cloud
+  base_url: https://api.ollama.com/v1
+  api_key_env: OLLAMA_CLOUD_API_KEY
+
+models:
+  default: kimi-k2.6
+  coder: qwen3-coder-next
+  reviewer: deepseek-v4-pro
+  designer: null
+  small: deepseek-v4-flash
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: true
+    url: http://localhost:8085/mcp
+  serena:
+    enabled: true
+
+lsp:
+  enabled: true
+  command: kotlin-lsp
+  extensions: [".kt", ".kts"]
+
+ui:
+  framework: null
+  platforms: []
+  colors: []
+
+code_quality:
+  forbidden_patterns:
+    - "!! operator (use requireNotNull/checkNotNull with message)"
+    - "GlobalScope.launch (always use a scoped coroutine)"
+    - "Thread.sleep in suspend code (use delay())"
+    - "Empty catch blocks"
+    - "Bare Exception/Throwable catch (catch specific types)"
+    - "lateinit outside DI containers and tests"
+    - "runBlocking outside main and tests"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Hardcoded Bukkit ChatColor strings — use MiniMessage or component API"
+    - "Using deprecated Bukkit API (use Paper-adventure components, not legacy ChatColors)"
+    - "Blocking main thread — schedule async with Bukkit schedulers or coroutines"
+    - "Storing Player references past event scope (causes memory leaks)"
+    - "Logging tokens, passwords, PII data"
+
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]

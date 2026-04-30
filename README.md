@@ -355,6 +355,7 @@ Print EXACTLY this message:
 | `kotlin-jvm-ktor.yaml` | Pure Kotlin/JVM Ktor backend | Gradle, detekt/ktlint, forbidden patterns, serena, kotlin-lsp |
 | `generic.yaml` | Any language | Minimal — fill everything manually |
 | `ollama-cloud.yaml` | Ollama cloud-hosted LLMs | DeepSeek V4 Pro + Qwen models, no Designer |
+| `minecraft-paper-plugin.yaml` | Minecraft Paper plugin (Kotlin/Gradle KTS) | Multi-module, Paper API conventions, MiniMessage/component rules |
 
 ## Requirements
 
