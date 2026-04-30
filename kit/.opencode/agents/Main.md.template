@@ -1,20 +1,19 @@
 ---
 description: Orchestrator. Single entry point for PO. Plans, dispatches, writes checkpoint. Does not write code.
 mode: primary
-model: openrouter/{{DEFAULT_MODEL}}
+model: {{PROVIDER_ID}}/{{DEFAULT_MODEL}}
 temperature: 0.2
 steps: 40
-tools:
-  read: true
-  edit: true
-  write: true
-  task: true
-  skill: true
-  compress: true
-  todowrite: true
-  knowledge-my-app_*: true
+permission:
+  read: allow
+  edit: allow
+  task: allow
+  skill: allow
+  todowrite: allow
+  "knowledge-my-app_*": allow
 ---
 
+> OpenCode-kit v2
 > **Tools scope:** `edit`/`write` are granted ONLY for checkpoints in `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `docs/`, `.opencode/` — via subagents. Violation = escalate to PO.
 
 ## Context and Rules

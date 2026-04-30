@@ -1,19 +1,23 @@
 ---
 description: Designer — UI/UX design for {{UI_FRAMEWORK}} ({{PLATFORMS}}). Clarifies context, thinks step by step, produces screen/component/flow descriptions. Read-only, outputs design docs via task response.
-mode: all
+mode: subagent
 model: {{PROVIDER_ID}}/{{DESIGNER_MODEL}}
 temperature: 0.5
 steps: 10
-tools:
-  read: true
-  grep: true
-  glob: true
-  question: true
-  compress: true
-  knowledge-my-app_*: true
-  context7_*: true
-  webfetch: true
+permission:
+  read: allow
+  edit: deny
+  bash: deny
+  grep: allow
+  glob: allow
+  question: allow
+  task: deny
+  webfetch: allow
+  "knowledge-my-app_*": allow
+  "context7_*": allow
 ---
+
+> OpenCode-kit v2
 
 ## Context and Rules
 

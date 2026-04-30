@@ -1,20 +1,22 @@
 ---
 description: Prompt Engineer — maintains and optimizes prompts in .opencode/agents/ and SKILL files; monitors context efficiency
-mode: all
+mode: subagent
 model: {{PROVIDER_ID}}/{{REVIEWER_MODEL}}
 temperature: 0.2
 steps: 10
-tools:
-  read: true
-  edit: true
-  write: true
-  grep: true
-  glob: true
-  question: true
-  webfetch: true
-  skill: true
-  compress: true
+permission:
+  read: allow
+  edit: allow
+  bash: deny
+  grep: allow
+  glob: allow
+  question: allow
+  task: deny
+  webfetch: allow
+  skill: allow
 ---
+
+> OpenCode-kit v2
 
 ## Context and Rules
 
@@ -26,7 +28,7 @@ Maintain agent prompts and SKILL files. Create/edit files in `.opencode/agents/`
 
 ## Agent prompt structure
 
-1. **Frontmatter** — `description`, `mode`, `model`, `temperature`, `tools`.
+1. **Frontmatter** — `description`, `mode`, `model`, `temperature`, `permission`.
 2. **Context and rules** — short reference block to `.opencode/_shared.md`. Do not duplicate shared context.
 3. **Role** — 1-3 sentences.
 4. **Pipeline** — step-by-step process, preferably as a code block.
@@ -41,6 +43,9 @@ Maintain agent prompts and SKILL files. Create/edit files in `.opencode/agents/`
 - Tables instead of long lists.
 - Low temperature for deterministic roles (0.1-0.2). Design / brainstorming — higher (0.5).
 - Common blocks (project context, modules, file-access matrix, tool naming) do NOT copy into agents — they live in `.opencode/_shared.md`.
+- Use `permission` (not deprecated `tools`) — `allow` / `ask` / `deny` per key.
+- Subagents use `mode: subagent` (not `all`). Primary agents use `mode: primary`.
+- Explicitly deny tools that an agent should never use (e.g. `bash: deny` for read-only agents).
 
 ## Context window
 

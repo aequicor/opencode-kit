@@ -1,18 +1,20 @@
 ---
 description: QA — creates and finalizes the feature test plan (unit, integration, manual). Called by @Main twice: DRAFT after spec, FINAL after all stages.
-mode: all
+mode: subagent
 model: {{PROVIDER_ID}}/{{CODER_MODEL}}
 temperature: 0.1
 steps: 15
-tools:
-  read: true
-  write: true
-  grep: true
-  glob: true
-  list: true
-  compress: true
-  knowledge-my-app_*: true
+permission:
+  read: allow
+  edit: allow
+  bash: deny
+  grep: allow
+  glob: allow
+  task: deny
+  "knowledge-my-app_*": allow
 ---
+
+> OpenCode-kit v2
 
 ## Context and Rules
 

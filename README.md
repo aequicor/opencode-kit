@@ -2,15 +2,19 @@
 
 Reusable OpenCode AI agent configuration. Clone this kit, fill in a manifest, run `apply.py`, and your project gets a full orchestrated AI development workflow with 8 specialized agents.
 
+**Migrated to OpenCode v1.1.1+ syntax** — uses `permission` (not deprecated `tools`), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
+
 ## What you get
 
 - **8 specialized AI agents**: Main (orchestrator), CodeWriter, CodeReviewer, BugFixer, debugger, QA, Designer, PromptEngineer
-- **Multi-model routing**: different models per role (orchestration vs coding vs review vs design)
+- **Multi-model routing**: different models per role (orchestration vs coding vs review vs design) + `small_model` for lightweight tasks
 - **MCP integrations**: context7 (library docs), serena (code navigation), KnowledgeOS (project vault)
-- **Anti-loop guardrails**: circuit breakers, context discipline, token budget management
+- **Anti-loop guardrails**: circuit breakers, context discipline, token budget management, native `doom_loop` detection
+- **Compaction & token budget**: auto-compaction with reserved buffer, 3-tier token budget (50%/75%/90%)
 - **Session continuity**: checkpoint pattern via `.planning/CURRENT.md`
 - **Documentation hierarchy**: per-module `requirements/spec/plans/reports` structure
 - **3 slash commands**: `/new-feature`, `/resume`, `/checkpoint`
+- **Security perimeter**: `external_directory` permission, granular bash rules, destructive command denials
 
 ## Quick Start (5 minutes)
 
@@ -86,16 +90,16 @@ The following must be set before running opencode:
 
 ## Agent Roster
 
-| Agent | Role | Model class | Invoked by |
-|-------|------|-------------|------------|
-| Main | Orchestrator, single entry point | Default (best SWE) | PO directly |
-| CodeWriter | Kotlin/code implementation, one stage at a time | Coder | @Main via task |
-| CodeReviewer | Read-only code review | Reviewer | @Main after CodeWriter |
-| BugFixer | Root cause analysis + fix + regression test | Coder | @Main for bugs |
-| debugger | Read-only investigation, produces failing test | Coder | @Main before BugFixer |
-| QA | Test plan (Draft before, Final after implementation) | Coder | @Main twice per feature |
-| Designer | UI/UX description for Compose Multiplatform | Designer | @Main for UI features |
-| PromptEngineer | Maintains agent prompts and skills | Reviewer | @Main for prompt work |
+| Agent | Role | Model class | Mode | Invoked by |
+|-------|------|-------------|------|------------|
+| Main | Orchestrator, single entry point | Default (best SWE) | Primary | PO directly |
+| CodeWriter | Kotlin/code implementation, one stage at a time | Coder | All | @Main via task |
+| CodeReviewer | Read-only code review | Reviewer | Subagent | @Main after CodeWriter |
+| BugFixer | Root cause analysis + fix + regression test | Coder | All | @Main for bugs |
+| debugger | Read-only investigation, produces failing test | Coder | All | @Main before BugFixer |
+| QA | Test plan (Draft before, Final after implementation) | Coder | Subagent | @Main twice per feature |
+| Designer | UI/UX description, read-only | Designer | Subagent | @Main for UI features |
+| PromptEngineer | Maintains agent prompts and skills | Reviewer | Subagent | @Main for prompt work |
 
 ## Profiles
 

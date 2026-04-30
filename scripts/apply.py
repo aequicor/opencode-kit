@@ -33,7 +33,8 @@ except ImportError:
 # CREDENTIAL CHECK
 # ─────────────────────────────────────────────
 
-_LOOKS_LIKE_KEY = re.compile(r'[A-Za-z0-9_\-]{32,}')
+_LOOKS_LIKE_KEY = re.compile(r"[A-Za-z0-9_\-]{32,}")
+
 
 def _check_credentials(manifest: dict) -> None:
     """Abort if manifest contains what looks like a real API key value."""
@@ -43,7 +44,9 @@ def _check_credentials(manifest: dict) -> None:
 
     # api_key_env should be a short env var name, not a real key
     if api_key_env and _LOOKS_LIKE_KEY.match(api_key_env) and len(api_key_env) > 30:
-        print(f"ERROR: provider.api_key_env looks like an actual API key: {api_key_env!r}")
+        print(
+            f"ERROR: provider.api_key_env looks like an actual API key: {api_key_env!r}"
+        )
         print("  Put the ENVIRONMENT VARIABLE NAME here, not the actual key.")
         print("  Example: api_key_env: ROUTERAI_OPENCODE")
         sys.exit(1)
@@ -53,14 +56,19 @@ def _check_credentials(manifest: dict) -> None:
         for field in ("api_key", "token", "secret", "password"):
             val = mcp_cfg.get(field, "")
             if val and _LOOKS_LIKE_KEY.match(str(val)) and len(str(val)) > 20:
-                print(f"ERROR: mcp.{mcp_name}.{field} looks like a real secret: {str(val)[:8]}...")
-                print("  Use api_key_env to reference an environment variable name instead.")
+                print(
+                    f"ERROR: mcp.{mcp_name}.{field} looks like a real secret: {str(val)[:8]}..."
+                )
+                print(
+                    "  Use api_key_env to reference an environment variable name instead."
+                )
                 sys.exit(1)
 
 
 # ─────────────────────────────────────────────
 # CONTEXT BUILDING
 # ─────────────────────────────────────────────
+
 
 def _build_module_table(modules: list) -> str:
     """Build the Markdown module table for _shared.md."""
@@ -122,6 +130,29 @@ def _build_color_table(colors: list) -> str:
 def _build_forbidden_list(patterns: list) -> str:
     """Build forbidden patterns bullet list for AGENTS.md."""
     return "\n".join(f"- {p}" for p in patterns)
+
+
+def _build_formatter_block(stack: dict, formatter_cfg: dict) -> str:
+    """Build the formatter JSON block for opencode.json."""
+    if not formatter_cfg.get("enabled", False):
+        return ""
+    fmt_name = formatter_cfg.get("name", stack.get("language", "default") + "-fmt")
+    command = formatter_cfg.get("command", [stack.get("build_command", ""), "lint"])
+    extensions = formatter_cfg.get("extensions", [])
+    ext_json = ", ".join(f'"{e}"' for e in extensions)
+    env_block = ""
+    if formatter_cfg.get("environment"):
+        env_items = []
+        for k, v in formatter_cfg.get("environment", {}).items():
+            env_items.append(f'        "{k}": "{v}"')
+        env_block = ',\n      "environment": {\n' + ",\n".join(env_items) + "\n      }"
+    cmd_json = ", ".join(f'"{c}"' for c in command)
+    return f'''  "formatter": {{
+    "{fmt_name}": {{
+      "command": [{cmd_json}],
+      "extensions": [{ext_json}]{env_block}
+    }}
+  }},'''
 
 
 def _build_lsp_block(lsp: dict) -> str:
@@ -187,14 +218,12 @@ def build_context(manifest: dict) -> dict:
         # Project
         "PROJECT_NAME": project.get("name", "My Project"),
         "PROJECT_DESCRIPTION": project.get("description", ""),
-
         # Stack
         "BUILD_COMMAND": stack.get("build_command", "./gradlew"),
         "COMPILE_COMMAND": stack.get("compile_command", "./gradlew compileKotlin"),
         "LINT_COMMAND": stack.get("lint_command", "./gradlew detekt ktlintCheck"),
         "TEST_COMMAND_TEMPLATE": stack.get("test_command", "./gradlew :[module]:test"),
         "STACK_DESCRIPTION": f"{project.get('name', 'Project')} — {stack.get('language', 'Kotlin')} stack",
-
         # Modules
         "MODULE_TABLE": _build_module_table(modules),
         "MODULE_SOURCE_TABLE": _build_source_table(modules),
@@ -202,47 +231,46 @@ def build_context(manifest: dict) -> dict:
         "MODULE_BUILD_COMMANDS": _build_module_build_commands(modules, stack),
         "MODULE_NAMES_LIST": _build_module_names_list(modules),
         "MODULE_DOCS_LIST": _build_module_docs_list(modules),
-
         # Provider
         "PROVIDER_ID": provider_id,
         "PROVIDER_NAME": provider_name,
         "PROVIDER_BASE_URL": provider.get("base_url", "https://routerai.ru/api/v1"),
         "PROVIDER_API_KEY_ENV": provider.get("api_key_env", "PROVIDER_API_KEY"),
-
         # Models
         "DEFAULT_MODEL": default_model,
         "CODER_MODEL": coder_model,
         "REVIEWER_MODEL": reviewer_model,
         "DESIGNER_MODEL": designer_model,
-
+        "SMALL_MODEL": models.get("small", coder_model),
         # Runtime
-        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-
+        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.utcnow().strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        ),
         # MCP
         "CONTEXT7_ENABLED": str(context7_cfg.get("enabled", True)).lower(),
         "CONTEXT7_API_KEY_ENV": context7_cfg.get("api_key_env", "CONTEXT7_API_KEY"),
         "KNOWLEDGE_ENABLED": str(knowledge_cfg.get("enabled", True)).lower(),
         "KNOWLEDGE_URL": knowledge_cfg.get("url", "http://localhost:8085/mcp"),
         "SERENA_ENABLED": str(serena_cfg.get("enabled", True)).lower(),
-
         # LSP
         "LSP_BLOCK": _build_lsp_block(lsp),
-
         # UI
         "UI_FRAMEWORK": ui_framework,
         "PLATFORMS": ", ".join(platforms),
         "COLOR_TABLE": _build_color_table(colors),
-
         # Code quality
         "FORBIDDEN_PATTERNS_LIST": _build_forbidden_list(
             code_quality.get("forbidden_patterns", [])
         ),
+        # Formatter
+        "FORMATTER_BLOCK": _build_formatter_block(stack, manifest.get("formatter", {})),
     }
 
 
 # ─────────────────────────────────────────────
 # TEMPLATE RENDERING
 # ─────────────────────────────────────────────
+
 
 def render(template_text: str, context: dict) -> str:
     """Replace all {{KEY}} placeholders with context values."""
@@ -254,12 +282,13 @@ def render(template_text: str, context: dict) -> str:
 
 def check_unresolved(rendered: str, source_path: str) -> list:
     """Return list of unresolved {{PLACEHOLDER}} tokens."""
-    return re.findall(r'\{\{[A-Z_]+\}\}', rendered)
+    return re.findall(r"\{\{[A-Z_]+\}\}", rendered)
 
 
 # ─────────────────────────────────────────────
 # FILE OPERATIONS
 # ─────────────────────────────────────────────
+
 
 def get_target_path(kit_file: Path, kit_root: Path, target_root: Path) -> Path:
     """
@@ -284,10 +313,18 @@ def collect_files(kit_root: Path) -> list:
 # DOCS SCAFFOLD
 # ─────────────────────────────────────────────
 
+
 def create_docs_scaffold(modules: list, target: Path, dry_run: bool) -> list:
     """Create empty docs/<module>/{requirements,spec,guidelines,plans,reports} directories."""
     created = []
-    subdirs = ["requirements", "spec", "guidelines", "plans", "reports", "documentation"]
+    subdirs = [
+        "requirements",
+        "spec",
+        "guidelines",
+        "plans",
+        "reports",
+        "documentation",
+    ]
     for m in modules:
         docs_path = m.get("docs_path", f"docs/{m['name']}/")
         for sub in subdirs:
@@ -304,6 +341,7 @@ def create_docs_scaffold(modules: list, target: Path, dry_run: bool) -> list:
 # ─────────────────────────────────────────────
 # MAIN APPLY LOGIC
 # ─────────────────────────────────────────────
+
 
 def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> None:
     kit_root = Path(__file__).parent.parent / "kit"
@@ -353,7 +391,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             action = f"{action} (merge/overwrite)"
 
         actions.append((action, kit_file, target_path, is_template))
-        print(f"  {action:20s} → {target_path.relative_to(target) if target.exists() else target_path}")
+        print(
+            f"  {action:20s} → {target_path.relative_to(target) if target.exists() else target_path}"
+        )
 
     # Create docs scaffold
     modules = manifest.get("modules", [])
@@ -366,7 +406,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             print(f"    ... and {len(scaffold_dirs) - 10} more")
 
     if dry_run:
-        print(f"\n[DRY RUN] {len(actions)} files would be written. Run without --dry-run to apply.")
+        print(
+            f"\n[DRY RUN] {len(actions)} files would be written. Run without --dry-run to apply."
+        )
         _print_checklist(context)
         return
 
@@ -382,7 +424,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             rendered = render(text, context)
             unresolved = check_unresolved(rendered, str(kit_file))
             if unresolved:
-                unresolved_report.append((str(target_path.relative_to(target)), unresolved))
+                unresolved_report.append(
+                    (str(target_path.relative_to(target)), unresolved)
+                )
             target_path.write_text(rendered, encoding="utf-8")
         else:
             shutil.copy2(kit_file, target_path)
@@ -408,13 +452,19 @@ def _print_checklist(context: dict) -> None:
     print(f"   export {context['PROVIDER_API_KEY_ENV']}=<your_api_key>")
     if context.get("CONTEXT7_ENABLED") == "true":
         print(f"   export {context['CONTEXT7_API_KEY_ENV']}=<your_context7_key>")
-    print(f"\n2. Verify opencode.json — apiKey must use {{env:VAR}} syntax, NOT a real key")
-    print(f"\n3. Check .opencode/_shared.md → Project Context section matches your project")
+    print(
+        f"\n2. Verify opencode.json — apiKey must use {{env:VAR}} syntax, NOT a real key"
+    )
+    print(
+        f"\n3. Check .opencode/_shared.md → Project Context section matches your project"
+    )
     print(f"\n4. Run compile to verify build works:")
     print(f"   {context['COMPILE_COMMAND']}")
     print(f"\n5. Add .env to .gitignore if not already there")
     if context.get("KNOWLEDGE_ENABLED") == "true":
-        print(f"\n6. Start KnowledgeOS at {context['KNOWLEDGE_URL']} before running opencode")
+        print(
+            f"\n6. Start KnowledgeOS at {context['KNOWLEDGE_URL']} before running opencode"
+        )
     print()
 
 
@@ -422,13 +472,23 @@ def _print_checklist(context: dict) -> None:
 # CLI
 # ─────────────────────────────────────────────
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Apply opencode-kit to a target project")
+    parser = argparse.ArgumentParser(
+        description="Apply opencode-kit to a target project"
+    )
     parser.add_argument("--manifest", required=True, help="Path to manifest YAML file")
-    parser.add_argument("--target", required=True, help="Path to target project directory")
-    parser.add_argument("--dry-run", action="store_true", help="Preview without writing files")
-    parser.add_argument("--merge", action="store_true",
-                        help="Overwrite existing files (default: skip existing)")
+    parser.add_argument(
+        "--target", required=True, help="Path to target project directory"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without writing files"
+    )
+    parser.add_argument(
+        "--merge",
+        action="store_true",
+        help="Overwrite existing files (default: skip existing)",
+    )
     args = parser.parse_args()
 
     apply(

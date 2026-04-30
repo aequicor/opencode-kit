@@ -1,6 +1,7 @@
 # Shared Agent Context — {{PROJECT_NAME}}
 
 > This file is loaded by all agents via `opencode.json` `instructions`. Agent-specific files contain only role-specific details — shared context lives here.
+> OpenCode-kit v2 — migrated to `permission` syntax (OpenCode v1.1.1+), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
 
 ## Instruction Hierarchy
 

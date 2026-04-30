@@ -40,6 +40,7 @@ models:
   coder: qwen/qwen3-coder-next
   reviewer: deepseek/deepseek-v4-pro
   designer: null                          # null = omit Designer agent
+  small: qwen/qwen3-coder-next
 
 mcp:
   context7:
@@ -67,3 +68,9 @@ code_quality:
     - "SQL string concatenation with user input"
     - "Logging sensitive data (passwords, tokens, PII)"
     - "TODO comments without tracking entry"
+
+formatter:
+  enabled: false                          # Enable and configure for your language
+  name: "default-fmt"
+  command: ["make", "format"]
+  extensions: []

@@ -39,6 +39,7 @@ models:
   coder: qwen/qwen3-coder-next
   reviewer: deepseek/deepseek-v4-pro
   designer: null                          # No UI — Designer agent omitted
+  small: qwen/qwen3-coder-next
 
 mcp:
   context7:
@@ -72,3 +73,9 @@ code_quality:
     - "TODO() in production code without DECISIONS.md entry"
     - "Raw SQL string concatenation (use parameterized queries)"
     - "Logging tokens, passwords, PII data"
+
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]

@@ -1,15 +1,20 @@
 ---
 description: Code Reviewer — read-only review of changesets (compilation readiness, code style, technical compliance, security)
-mode: all
+mode: subagent
 model: {{PROVIDER_ID}}/{{REVIEWER_MODEL}}
 temperature: 0.1
 steps: 10
-tools:
-  read: true
-  grep: true
-  glob: true
-  compress: true
+permission:
+  read: allow
+  edit: deny
+  bash: deny
+  task: deny
+  grep: allow
+  glob: allow
+  webfetch: deny
 ---
+
+> OpenCode-kit v2
 
 ## Context and Rules
 
