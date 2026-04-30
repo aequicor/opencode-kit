@@ -1,0 +1,143 @@
+# opencode-kit manifest
+# Fill this file for your project, then run:
+#   python3 scripts/apply.py --manifest my-project.yaml --target /path/to/project
+
+# ─────────────────────────────────────────────
+# PROJECT
+# ─────────────────────────────────────────────
+project:
+  name: "My Project"
+  description: "Brief one-line description of the project"
+
+# ─────────────────────────────────────────────
+# STACK
+# ─────────────────────────────────────────────
+stack:
+  language: kotlin                        # kotlin | python | typescript | go | generic
+  profile: kotlin-multiplatform           # which profile from profiles/ to use as base
+                                          # kotlin-multiplatform | kotlin-jvm-ktor | generic
+
+  # Build commands — used in AGENTS.md and agent prompts
+  build_command: "./gradlew"              # The root build command
+  compile_command: "./gradlew compileKotlin"   # Quick compile check
+  lint_command: "./gradlew detekt ktlintCheck" # Lint + code style
+  test_command: "./gradlew :[module]:test"     # [module] is a literal placeholder
+                                               # filled per-module in the prompt
+
+# ─────────────────────────────────────────────
+# MODULES
+# ─────────────────────────────────────────────
+# Each module produces one row in the module table in _shared.md and FILE_STRUCTURE.md.
+# It also creates the docs/<module>/ directory scaffold.
+modules:
+  - name: server
+    gradle_module: ":server"                    # null if not using Gradle
+    source_root: "server/src/main/kotlin/com/example/"
+    test_root: "server/src/test/kotlin/com/example/"
+    docs_path: "docs/server/"
+    responsibility: "Ktor server, admin panel, business logic, auth"
+
+  - name: client
+    gradle_module: ":composeApp"
+    source_root: "composeApp/src/commonMain/kotlin/com/example/"
+    test_root: "composeApp/src/commonTest/kotlin/com/example/"
+    docs_path: "docs/client/"
+    responsibility: "Compose Multiplatform client UI, session management"
+
+  # Add more modules as needed:
+  # - name: payments-service
+  #   gradle_module: ":payments-service"
+  #   source_root: "payments-service/src/main/kotlin/com/example/"
+  #   test_root: "payments-service/src/test/kotlin/com/example/"
+  #   docs_path: "docs/payments-service/"
+  #   responsibility: "Payment processing, billing"
+
+# ─────────────────────────────────────────────
+# PROVIDER
+# ─────────────────────────────────────────────
+# The AI provider for all agents.
+# IMPORTANT: put the env var NAME here, never the actual key.
+provider:
+  name: routerai                          # Provider display name (used in opencode.json)
+  base_url: https://routerai.ru/api/v1   # OpenAI-compatible endpoint
+  api_key_env: ROUTERAI_OPENCODE          # Name of the env var holding the API key
+
+# ─────────────────────────────────────────────
+# MODELS
+# ─────────────────────────────────────────────
+# Model IDs as recognized by your provider.
+models:
+  default: moonshotai/kimi-k2.6           # Orchestrator (@Main) — best reasoning/SWE
+  coder: qwen/qwen3-coder-next            # @CodeWriter, @BugFixer, @debugger, @QA
+  reviewer: deepseek/deepseek-v4-pro      # @CodeReviewer, @PromptEngineer
+  designer: openai/gpt-5.4               # @Designer — vision + spatial reasoning
+                                          # set to null to omit Designer agent
+
+# ─────────────────────────────────────────────
+# MCP INTEGRATIONS
+# ─────────────────────────────────────────────
+mcp:
+  context7:
+    enabled: true                         # External library documentation (rate-limited)
+    api_key_env: CONTEXT7_API_KEY         # Name of the env var (or null if no auth needed)
+
+  knowledge:
+    enabled: true                         # KnowledgeOS vault — project docs + cached API docs
+    url: http://localhost:8085/mcp        # URL of running KnowledgeOS instance
+                                          # set enabled: false if not using KnowledgeOS
+
+  serena:
+    enabled: true                         # Semantic code navigation (find symbols, types)
+                                          # set enabled: false for non-JVM projects
+
+# ─────────────────────────────────────────────
+# LSP
+# ─────────────────────────────────────────────
+lsp:
+  enabled: true                           # Set to false to omit LSP block
+  command: kotlin-lsp                     # LSP server command
+  extensions: [".kt", ".kts"]            # File extensions for this LSP
+
+# ─────────────────────────────────────────────
+# UI (optional — omit or set framework: null to skip Designer agent)
+# ─────────────────────────────────────────────
+ui:
+  framework: "Compose Multiplatform"      # UI framework name (shown in Designer prompt)
+                                          # set to null to omit Designer agent entirely
+  platforms: ["Desktop", "Android", "iOS"]
+
+  # Color palette — listed in Designer agent prompt
+  colors:
+    - name: "Dark Navy"
+      hex: "#161920"
+      purpose: "Primary background"
+    - name: "Brand Orange"
+      hex: "#DE6A39"
+      purpose: "Primary accent / CTA"
+    - name: "Primary White"
+      hex: "#FFFFFF"
+      purpose: "Main text"
+    - name: "Secondary Gray"
+      hex: "#9BA0AB"
+      purpose: "Secondary text"
+    - name: "Button Gradient Start"
+      hex: "#ECA44A"
+      purpose: "CTA button gradient"
+    - name: "Button Gradient End"
+      hex: "#D1533A"
+      purpose: "CTA button gradient"
+
+# ─────────────────────────────────────────────
+# CODE QUALITY
+# ─────────────────────────────────────────────
+code_quality:
+  # These patterns are listed as forbidden in AGENTS.md and CodeWriter agent.
+  # Adjust for your language/framework.
+  forbidden_patterns:
+    - "!! operator (use requireNotNull/checkNotNull with message)"
+    - "GlobalScope.launch (always use a scoped coroutine)"
+    - "Thread.sleep in suspend code (use delay())"
+    - "Empty catch blocks"
+    - "Bare Exception/Throwable catch (catch specific types)"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Raw SQL string concatenation with user input (use parameterized queries)"

@@ -1,0 +1,74 @@
+# Profile: Kotlin JVM / Ktor
+# Pre-filled for pure Kotlin/JVM backend services using Ktor.
+# Copy this to my-project.yaml and fill in the project-specific sections.
+
+project:
+  name: "My Ktor Service"
+  description: "Kotlin/JVM Ktor backend service"
+
+stack:
+  language: kotlin
+  profile: kotlin-jvm-ktor
+  build_command: "./gradlew"
+  compile_command: "./gradlew compileKotlin"
+  lint_command: "./gradlew detekt ktlintCheck"
+  test_command: "./gradlew :[module]:test"
+
+modules:
+  - name: api
+    gradle_module: ":api"
+    source_root: "api/src/main/kotlin/com/example/"
+    test_root: "api/src/test/kotlin/com/example/"
+    docs_path: "docs/api/"
+    responsibility: "Ktor routes, request/response handling"
+
+  - name: core
+    gradle_module: ":core"
+    source_root: "core/src/main/kotlin/com/example/"
+    test_root: "core/src/test/kotlin/com/example/"
+    docs_path: "docs/core/"
+    responsibility: "Business logic, domain models, repositories"
+
+provider:
+  name: routerai
+  base_url: https://routerai.ru/api/v1
+  api_key_env: ROUTERAI_OPENCODE
+
+models:
+  default: moonshotai/kimi-k2.6
+  coder: qwen/qwen3-coder-next
+  reviewer: deepseek/deepseek-v4-pro
+  designer: null                          # No UI — Designer agent omitted
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: true
+    url: http://localhost:8085/mcp
+  serena:
+    enabled: true
+
+lsp:
+  enabled: true
+  command: kotlin-lsp
+  extensions: [".kt", ".kts"]
+
+ui:
+  framework: null                         # No UI — Designer agent omitted
+  platforms: []
+  colors: []
+
+code_quality:
+  forbidden_patterns:
+    - "!! operator (use requireNotNull/checkNotNull with message)"
+    - "GlobalScope.launch (always use a scoped coroutine)"
+    - "Thread.sleep in suspend code (use delay())"
+    - "Empty catch blocks"
+    - "Bare Exception/Throwable catch (catch specific types)"
+    - "lateinit outside DI containers and tests"
+    - "runBlocking outside main and tests"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Raw SQL string concatenation (use parameterized queries)"
+    - "Logging tokens, passwords, PII data"
