@@ -1,0 +1,46 @@
+# opencode-kit profile: Java / Spring Boot
+# Usage: set stack.profile: java-spring in your manifest
+
+_profile_name: java-spring
+_profile_description: "Java 17+ with Spring Boot 3, Maven, Checkstyle, and JUnit 5"
+
+stack:
+  language: java
+  build_command: "mvnw.cmd"
+  compile_command: "mvnw.cmd compile"
+  lint_command: "mvnw.cmd checkstyle:check"
+  test_command: "mvnw.cmd test -pl [module]"
+
+lsp:
+  enabled: true
+  command: "jdtls"
+  extensions: [".java"]
+
+formatter:
+  enabled: true
+  name: "spotless"
+  command: ["mvnw.cmd", "spotless:apply"]
+  extensions: [".java"]
+
+code_quality:
+  forbidden_patterns:
+    - "System.out.println in production code (use SLF4J Logger)"
+    - "printStackTrace() — use logger.error(msg, exception)"
+    - "Catching Exception without rethrow or proper handling"
+    - "Field injection (@Autowired on field — use constructor injection)"
+    - "Raw types (use generics)"
+    - "Thread.sleep in web/async context"
+    - "SQL string concatenation with user input (use PreparedStatement or JPA Criteria)"
+    - "@Transactional on private methods (Spring proxy limitation)"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Hardcoded secrets or credentials in any file (use application.properties/env)"
+    - "Synchronous REST calls without timeout (use async with configured timeout)"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

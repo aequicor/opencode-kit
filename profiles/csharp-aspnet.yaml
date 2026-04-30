@@ -1,0 +1,47 @@
+# opencode-kit profile: C# / ASP.NET Core
+# Usage: set stack.profile: csharp-aspnet in your manifest
+
+_profile_name: csharp-aspnet
+_profile_description: "C# (.NET 8) + ASP.NET Core with dotnet CLI, analyzers, and xUnit"
+
+stack:
+  language: csharp
+  build_command: "dotnet build"
+  compile_command: "dotnet build --no-restore"
+  lint_command: "dotnet format analyzers --verify-no-changes"
+  test_command: "dotnet test [module]/"
+
+lsp:
+  enabled: true
+  command: "csharp-ls"
+  extensions: [".cs", ".cshtml", ".razor"]
+
+formatter:
+  enabled: true
+  name: "dotnet-format"
+  command: ["dotnet", "format"]
+  extensions: [".cs"]
+
+code_quality:
+  forbidden_patterns:
+    - "Console.WriteLine in production code (use ILogger<T>)"
+    - "async void (use async Task — async void only for event handlers)"
+    - ".Result or .Wait() on async calls (use await)"
+    - "Empty catch blocks"
+    - "catch (Exception) without rethrow or logging"
+    - "string concatenation for SQL (use SqlParameter / Entity Framework Core)"
+    - "Hardcoded connection strings (use IConfiguration / secrets)"
+    - "public fields (use properties)"
+    - "Thread.Sleep in async/web context"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Hardcoded secrets or credentials in any file (use User Secrets / Key Vault)"
+    - "new HttpClient() per request (use IHttpClientFactory)"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

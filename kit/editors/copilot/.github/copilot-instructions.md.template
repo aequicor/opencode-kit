@@ -1,0 +1,51 @@
+# GitHub Copilot Instructions — {{PROJECT_NAME}}
+
+> These instructions are read automatically by GitHub Copilot and Copilot Workspace.
+> Full rules are in `AGENTS.md` at the repo root.
+
+## Project Overview
+
+{{PROJECT_DESCRIPTION}}
+
+**Stack:** {{STACK_DESCRIPTION}}
+
+## Modules
+
+{{MODULE_TABLE}}
+
+## Build and Test Commands
+
+| Command | Purpose |
+|---------|---------|
+| `{{BUILD_COMMAND}}` | Full project build |
+| `{{COMPILE_COMMAND}}` | Quick compile check |
+| `{{TEST_COMMAND_TEMPLATE}}` | Run tests (replace `[module]` with actual module name) |
+| `{{LINT_COMMAND}}` | Lint + code-style check |
+
+**Always run `{{COMPILE_COMMAND}}` and `{{LINT_COMMAND}}` before marking work complete.**
+
+## Forbidden Patterns
+
+{{FORBIDDEN_PATTERNS_LIST}}
+
+## Key Conventions
+
+- Read `.planning/CURRENT.md` before starting work.
+- Check `.planning/DECISIONS.md` before proposing architecture changes (append-only — never delete).
+- **Never invent** library API methods — always verify from `docs/external-apis/` or official docs.
+- One logical change per commit: `<type>: <short description>` (feat/fix/refactor/test/docs/chore).
+
+## Security
+
+- Never write API keys, tokens, passwords, or secrets into code or commit messages.
+- SQL via parameterized queries only — no string concatenation with user input.
+- Flag auth, crypto, payments, or PII handling for review before committing.
+
+## Definition of Done
+
+All of the following must be true:
+- [ ] `{{COMPILE_COMMAND}}` passes
+- [ ] All tests pass (new tests added for changed behaviour)
+- [ ] `{{LINT_COMMAND}}` passes
+- [ ] No unexplained `TODO`/`FIXME`
+- [ ] Committed to git

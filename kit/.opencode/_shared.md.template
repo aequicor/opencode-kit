@@ -15,6 +15,20 @@ When instructions conflict, the most specific source wins:
 
 If an agent file instruction contradicts `_shared.md` — follow the agent file.
 
+## Language / i18n
+
+Project supports multilingual agent output. Set `OPPENCODE_LANG` environment variable:
+
+- `en` — English (default)
+- `ru` — Russian (Русский)
+
+Locale definitions in `.opencode/i18n/<locale>.yaml`. Agents read `OPPENCODE_LANG` and use the corresponding locale for status messages and user-facing output.
+
+To add a new language:
+1. Copy `.opencode/i18n/en.yaml` to `.opencode/i18n/<code>.yaml`
+2. Translate all values
+3. Set `OPPENCODE_LANG=<code>` to use it
+
 ## Project Context
 
 **{{PROJECT_NAME}}** — {{STACK_DESCRIPTION}}
@@ -51,6 +65,21 @@ Always search `knowledge-my-app_search_docs` for documentation first, then full 
 2. serena_find_symbol / serena_search_symbols → code symbols (classes, functions)
 3. grep / glob / read → filesystem (last resort)
 ```
+
+## Auto Memory — CRITICAL
+
+`AUTO_MEMORY.md` is the project's self-learning journal. Loaded by all agents.
+
+**Read AUTO_MEMORY.md** at the start of every task — it contains build commands, debugging insights, API pitfalls, and patterns discovered in previous sessions.
+
+**Write to AUTO_MEMORY.md** after completing any non-trivial unit of work:
+- New build/test/lint command discovered → append to Learned Build Commands
+- Root cause + fix for a tricky bug → append to Debugging Insights
+- Library API that behaved unexpectedly → append to API Pitfalls
+- Reusable pattern used successfully → append to Useful Patterns
+- Task completed → update Session Continuity section
+
+**Format:** append a new row or entry at the end of the relevant section. Never delete entries — AUTO_MEMORY.md is append-only.
 
 ## External API Lookup — KnowledgeOS-first, context7 conditional
 
@@ -187,6 +216,29 @@ for each file in list:
   3. checkpoint in CURRENT.md
   # next turn starts with clean cache
 ```
+
+## Human-in-the-Loop (HITL) Approval Gates
+
+Critical operations require explicit PO approval before execution. @Main enforces these gates:
+
+| Gate | Trigger | Approval required | Blocked action |
+|------|---------|-------------------|----------------|
+| PLAN_CONFIRM | After plan created, before EXECUTE | PO must approve | All implementation |
+| DEPLOY | Any deploy/publish/release command | PO must approve | `docker push`, `npm publish`, deploy scripts |
+| DESTROY | Destructive infra/data operations | PO must approve | `terraform destroy`, `kubectl delete`, `DROP TABLE` |
+| SECRET_ROTATE | Key rotation, credential changes | PO must approve | Any `.env` or credential file modification |
+| MIGRATION | DB schema migration | PO must approve | Migration scripts |
+| EXTERNAL_API | New outbound 3rd-party API call | PO must approve | Adding new external HTTP calls |
+| COST_BREACH | Single operation > $5 estimated cost | PO must approve | Expensive model calls |
+
+**Approval flow:**
+1. @Main detects gate condition.
+2. @Main writes `BLOCKED: <gate> — awaiting PO approval` to CURRENT.md.
+3. @Main presents the operation description, risk assessment, and impact scope to PO.
+4. PO replies `approved` or `denied`.
+5. @Main resumes from CURRENT.md `NEXT` line.
+
+**NO agent may bypass gates.** If a subagent triggers a gate condition — it must escalate, not proceed.
 
 ## What stays in each agent file
 

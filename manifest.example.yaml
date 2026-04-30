@@ -3,6 +3,20 @@
 #   python3 scripts/apply.py --manifest my-project.yaml --target /path/to/project
 
 # ─────────────────────────────────────────────
+# KIT VERSION (do not change — used for migration checks)
+# ─────────────────────────────────────────────
+kit_version: "1.3.0"
+
+# ─────────────────────────────────────────────
+# EDITORS
+# ─────────────────────────────────────────────
+# Which editor-specific config files to generate.
+# opencode  → CLAUDE.md (OpenCode/Claude Code rules extending AGENTS.md)
+# cursor    → .cursor/rules/conventions.mdc
+# copilot   → .github/copilot-instructions.md
+editors: [opencode]                     # e.g. [opencode, cursor, copilot]
+
+# ─────────────────────────────────────────────
 # PROJECT
 # ─────────────────────────────────────────────
 project:
@@ -16,6 +30,7 @@ stack:
   language: kotlin                        # kotlin | python | typescript | go | generic
   profile: kotlin-multiplatform           # which profile from profiles/ to use as base
                                           # kotlin-multiplatform | kotlin-jvm-ktor | generic
+                                          # typescript-nextjs | python-fastapi | minecraft-paper-plugin
 
   # Build commands — used in AGENTS.md and agent prompts
   build_command: "./gradlew"              # The root build command

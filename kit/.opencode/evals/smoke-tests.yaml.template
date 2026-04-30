@@ -1,0 +1,98 @@
+# Eval Suite: Agent Prompt Smoke Tests — {{PROJECT_NAME}}
+
+name: {{PROJECT_NAME}} Smoke Tests
+description: Basic classification and pipeline tests for all agents
+
+cases:
+  - id: eval-main-001
+    description: @Main classifies a feature task correctly
+    agent: Main
+    input: |
+      PO: I need to add a user authentication endpoint to the server module.
+      Classify this task.
+    expected_patterns:
+      - "CLARIFY"
+      - "Which module"
+    forbidden_patterns:
+      - "I don't know"
+    max_steps: 5
+    weight: 1.0
+
+  - id: eval-main-002
+    description: @Main classifies a bug task correctly
+    agent: Main
+    input: |
+      PO: There's a NullPointerException in the login handler when the session is expired.
+      Stacktrace: NullPointerException at com.example.auth.LoginHandler.authenticate:42
+      Classify this task.
+    expected_patterns:
+      - "BUG"
+      - "How to reproduce"
+    forbidden_patterns:
+      - "FEATURE"
+    max_steps: 5
+    weight: 1.0
+
+  - id: eval-codewriter-001
+    description: @CodeWriter reads before writing
+    agent: CodeWriter
+    input: |
+      Stage file: docs/server/plans/auth-stage-01.md
+      Implement the POST /auth/login endpoint with request validation.
+      Guidelines: use Ktor, return JWT token, validate email format.
+    expected_patterns:
+      - "read"
+      - "Read"
+    forbidden_patterns:
+      - "I'll guess"
+      - "from memory"
+    max_steps: 8
+    weight: 1.0
+
+  - id: eval-codereviewer-001
+    description: @CodeReviewer produces structured review
+    agent: CodeReviewer
+    input: |
+      Review this changeset:
+      File: server/src/main/kotlin/com/example/auth/AuthHandler.kt
+      Changes: added new endpoint with hardcoded admin key "12345" in logs
+    expected_patterns:
+      - "CRITICAL"
+      - "log"
+      - "hardcoded"
+    forbidden_patterns:
+      - "approved"
+    max_steps: 5
+    weight: 1.0
+
+  - id: eval-bugfixer-001
+    description: @BugFixer analyzes root cause before fixing
+    agent: BugFixer
+    input: |
+      Bug: NullPointerException at com.example.service.PaymentService.process:88
+      Stacktrace: ...PaymentService.process(PaymentService.kt:88)
+      Environment: dev
+    expected_patterns:
+      - "root cause"
+      - "reproduce"
+    forbidden_patterns:
+      - "I'll just"
+    max_steps: 8
+    weight: 1.0
+
+  - id: eval-qa-001
+    description: @QA creates structured test plan
+    agent: QA
+    input: |
+      Mode: DRAFT
+      Feature: user-authentication
+      Module: server
+      Spec: docs/server/spec/user-authentication.md
+    expected_patterns:
+      - "test plan"
+      - "Unit Tests"
+      - "Manual"
+    forbidden_patterns:
+      - "I'll write the tests"
+    max_steps: 6
+    weight: 1.0

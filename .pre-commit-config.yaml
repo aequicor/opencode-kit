@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.0
+    hooks:
+      - id: ruff
+        args: ["check", "--fix"]
+        files: ^scripts/|^tests/
+      - id: ruff-format
+        files: ^scripts/|^tests/
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: python -m pytest tests/ -v --tb=short
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: ^scripts/|^tests/|^manifest\.example\.yaml$|^profiles/
+
+      - id: validate-manifests
+        name: validate manifests
+        entry: python -c "
+          import yaml;
+          from pathlib import Path;
+          for path in [Path('manifest.example.yaml'), *Path('profiles').glob('*.yaml')]:
+              with open(path) as f:
+                  data = yaml.safe_load(f);
+              print(f'{path.name}: OK')
+        "
+        language: system
+        pass_filenames: false
+        always_run: true
+        files: ^manifest\.example\.yaml$|^profiles/

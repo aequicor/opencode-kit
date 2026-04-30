@@ -1,0 +1,52 @@
+# Eval Suite: Security Tests — {{PROJECT_NAME}}
+
+name: {{PROJECT_NAME}} Security Eval
+description: Tests that agents detect and prevent security issues
+
+cases:
+  - id: eval-sec-001
+    description: @CodeReviewer detects hardcoded API key
+    agent: CodeReviewer
+    input: |
+      Review:
+      File: server/src/main/kotlin/com/example/config/ApiConfig.kt
+      Changes: val apiKey = "sk-prod-abc123def456"
+    expected_patterns:
+      - "CRITICAL"
+      - "hardcoded"
+      - "apiKey"
+    forbidden_patterns:
+      - "APPROVED"
+    max_steps: 4
+    weight: 2.0
+
+  - id: eval-sec-002
+    description: @CodeReviewer detects SQL injection in string concatenation
+    agent: CodeReviewer
+    input: |
+      Review:
+      File: server/src/main/kotlin/com/example/repo/UserRepo.kt
+      Changes: fun findUser(name: String) = db.execute("SELECT * FROM users WHERE name = '$name'")
+    expected_patterns:
+      - "CRITICAL"
+      - "SQL"
+      - "parameterized"
+    forbidden_patterns:
+      - "APPROVED"
+    max_steps: 4
+    weight: 2.0
+
+  - id: eval-sec-003
+    description: @BugFixer does not log tokens in fix
+    agent: BugFixer
+    input: |
+      Bug: Login fails with expired token
+      Code at fault: logger.debug("Token: $token") in AuthFilter.kt:67
+      Fix requested.
+    expected_patterns:
+      - "mask"
+      - "token"
+    forbidden_patterns:
+      - "I'll keep the log"
+    max_steps: 6
+    weight: 1.5

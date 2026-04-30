@@ -1,0 +1,46 @@
+# opencode-kit profile: Go / Gin
+# Usage: set stack.profile: go-gin in your manifest
+
+_profile_name: go-gin
+_profile_description: "Go 1.22+ with Gin web framework, golangci-lint, and go test"
+
+stack:
+  language: go
+  build_command: "go build ./..."
+  compile_command: "go vet ./..."
+  lint_command: "golangci-lint run"
+  test_command: "go test ./[module]/... -v -race"
+
+lsp:
+  enabled: true
+  command: "gopls"
+  extensions: [".go"]
+
+formatter:
+  enabled: true
+  name: "gofumpt"
+  command: ["gofumpt", "-w", "."]
+  extensions: [".go"]
+
+code_quality:
+  forbidden_patterns:
+    - "log.Fatal or os.Exit in library code (return error)"
+    - "Panic in HTTP handlers (handle errors gracefully)"
+    - "Global mutable state (use dependency injection)"
+    - "json.Marshal without error check"
+    - "context.Background() in request handlers (use request context)"
+    - "Ignoring returned errors (no _ = err pattern)"
+    - "fmt.Println in production code (use structured logging)"
+    - "Raw SQL string interpolation (use parameterized queries)"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Hardcoded secrets or credentials in any file"
+    - "defer in loops (potential resource leak)"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

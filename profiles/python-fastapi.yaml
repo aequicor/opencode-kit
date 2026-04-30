@@ -1,0 +1,48 @@
+# opencode-kit profile: Python / FastAPI
+# Usage: set stack.profile: python-fastapi in your manifest
+# This profile pre-fills stack, lsp, formatter, and code_quality for a FastAPI project.
+
+_profile_name: python-fastapi
+_profile_description: "Python 3.11+ / FastAPI with Ruff, mypy, and pytest"
+
+stack:
+  language: python
+  build_command: "pip install -e ."
+  compile_command: "python -m mypy src/ --strict"
+  lint_command: "ruff check . && ruff format --check ."
+  test_command: "pytest [module]/ -v"
+
+lsp:
+  enabled: true
+  command: "pylsp"
+  extensions: [".py"]
+
+formatter:
+  enabled: true
+  name: "ruff-format"
+  command: ["ruff", "format", "."]
+  extensions: [".py"]
+
+code_quality:
+  forbidden_patterns:
+    - "bare except: clause (catch specific exception types)"
+    - "mutable default argument in function signature (use None + if check)"
+    - "print() in production code (use logging module)"
+    - "assert statements in production code (only in tests)"
+    - "shell=True in subprocess calls (command injection risk)"
+    - "os.system() — use subprocess.run() with a list"
+    - "SQL string formatting with user input (use parameterized queries)"
+    - "Synchronous blocking I/O inside async def (use await or run_in_executor)"
+    - "Global state mutation across requests"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "Hardcoded secrets or credentials in any file"
+    - "* imports (use explicit imports)"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

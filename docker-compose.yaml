@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  knowledge-os:
+    image: ghcr.io/aequicor/knowledge-os:latest
+    container_name: knowledge-os
+    ports:
+      - "8085:8085"
+    volumes:
+      - knowledge_data:/data
+      - ./docs:/docs:ro
+    environment:
+      KNOWLEDGE_OS_DATA_DIR: /data
+    restart: unless-stopped
+
+  apply-kit:
+    build: .
+    container_name: opencode-kit-apply
+    volumes:
+      - ./my-project.yaml:/manifest.yaml:ro
+      - workspace:/workspace
+    command: |
+      python scripts/apply.py
+        --manifest /manifest.yaml
+        --target /workspace
+        --merge
+    profiles:
+      - apply
+
+volumes:
+  knowledge_data:
+  workspace:

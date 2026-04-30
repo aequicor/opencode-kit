@@ -1,113 +1,125 @@
-# AGENTS.md — Rules for {{PROJECT_NAME}}
+# AGENTS.md — {{PROJECT_NAME}}
 
-> These are RULES, not suggestions. Violations = STOP and ask.
-
----
-
-## 0. SESSION STARTUP — DO THIS FIRST, EVERY TIME
-
-Before reading the user request, before any tool call:
-
-1. READ `.planning/CURRENT.md` — active task and where we stopped.
-2. READ `.planning/DECISIONS.md` — existing architectural choices.
-3. If CURRENT.md references a `docs/[module]/plans/` path — read that plan file.
-4. If those files contradict the user's new request → STOP, surface the conflict, ask.
-
-**Single entry point: always start work through `@Main`.** Do not invoke @CodeWriter, @BugFixer, @CodeReviewer without @Main orchestration.
-
-If user says **"continue"**, **"continue work"**, **"продолжай"**, **"go on"** → invoke `/resume`:
-- `/resume` reads CURRENT.md + git state, shows what to resume, waits for "yes".
-- Do NOT act on bare "continue" — run `/resume` first, always.
+> Universal coding-agent rules for this project.
+> Supported by: Claude Code, OpenCode, Cursor, GitHub Copilot, Windsurf, Devin, Google Jules,
+> and all tools following the [AAIF AGENTS.md standard](https://agents.md).
 
 ---
 
-## 1. CONTEXT DISCIPLINE (anti-loop, anti-rot)
+## Project Overview
 
-- If you make the SAME tool call with SAME arguments 3 times → STOP. Surface to user.
-- If a thinking/reasoning block exceeds ~2000 tokens without progress → STOP. Write what you tried to `CURRENT.md` "BLOCKED" section, return.
-- Never paste full file contents into your reply. Reference by path + line range.
-- After every 5 tool calls OR every file edit batch → call `/checkpoint` to update `CURRENT.md`.
+{{PROJECT_DESCRIPTION}}
 
----
-
-## 2. EXTERNAL LIBRARIES — NO HALLUCINATIONS
-
-If you are about to use ANY external library API, follow the pipeline from `.opencode/_shared.md` → **External API Lookup**:
-
-1. `knowledge-my-app_search_docs "external-apis <lib> <version>"` — vault first (fastest, cached).
-2. (cache miss) `context7_resolve_library_id` + `context7_get_library_docs` — rate-limited.
-3. (context7 rate-limit / not found) `webfetch` on canonical URL — see _shared.md for URLs.
-4. If none succeed → say "I don't have current docs for X" and ASK before guessing.
-
-Never invent extension functions, builder DSL methods, or annotation params.
+**Stack:** {{STACK_DESCRIPTION}}
 
 ---
 
-## 3. CODE QUALITY — HARD RULES
+## Modules
 
-### Forbidden
+{{MODULE_TABLE}}
+
+---
+
+## Build and Test Commands
+
+| Command | Purpose |
+|---------|---------|
+| `{{BUILD_COMMAND}}` | Full project build |
+| `{{COMPILE_COMMAND}}` | Quick compile check |
+| `{{TEST_COMMAND_TEMPLATE}}` | Run tests (replace `[module]` with module name) |
+| `{{LINT_COMMAND}}` | Lint + code-style check |
+
+**Always compile and run tests before marking a task complete.**
+
+---
+
+## Code Style — Hard Rules
+
+### Forbidden Patterns
 
 {{FORBIDDEN_PATTERNS_LIST}}
 
 ### Style
 
-- Run `{{LINT_COMMAND}}` after each implementation block.
-- Consistent style with the surrounding codebase.
-- Public API must be documented.
+- Run `{{LINT_COMMAND}}` after every implementation block.
+- Match the style of surrounding code, not personal preference.
+- All public API must be documented.
 
 ---
 
-## 4. EXECUTION LOOP — ATOMIC STEPS
+## Conventions
 
-For ANY non-trivial change:
+### Planning Files
 
-```
-1. PLAN  → write/update .planning/plans/PLAN-NNN.md (file paths + verification steps)
-2. TEST  → write failing test FIRST when feasible
-3. CODE  → implement smallest unit
-4. VERIFY → {{COMPILE_COMMAND}} && {{TEST_COMMAND_TEMPLATE}}
-5. LINT  → {{LINT_COMMAND}}
-6. COMMIT → git add + git commit with descriptive message (one logical change)
-7. CHECKPOINT → update .planning/CURRENT.md
-```
+- `.planning/CURRENT.md` — active task and last checkpoint. **Read before starting work.**
+- `.planning/DECISIONS.md` — architectural decision log (ADR). Check before proposing structural changes. **Append-only — never delete entries.**
 
-Skip steps only if user explicitly says so. Document the skip in `CURRENT.md`.
+### Module Docs Structure
 
----
+{{MODULE_DOCS_LIST}}
 
-## 5. SECURITY GUARDS
+Each module's docs follow: `docs/<module>/{requirements,spec,guidelines,plans,reports}/`
 
-- Never write API keys, tokens, passwords into code or commit messages.
-- Never read `~/.ssh/`, `~/.aws/`, `.env*` files unless user explicitly requests.
-- Network calls in tests → use mocks / test doubles, not real endpoints.
-- SQL only via parameterized queries. No string concatenation into queries. Never.
-- Flag any code that handles auth, crypto, payments, or PII for `@CodeReviewer` before commit.
+### External Libraries
+
+Before using any external library API:
+1. Check `docs/external-apis/` for cached documentation.
+2. Look up the library from its canonical, authoritative source.
+3. **Never invent** method names, builder DSL methods, or annotation parameters.
+4. If no documentation is available, state that clearly — do not guess.
 
 ---
 
-## 6. COMPLETION DEFINITION
+## Boundaries
 
-A task is "DONE" only if:
-- [ ] Code compiles (`{{COMPILE_COMMAND}}`)
-- [ ] Tests pass (added new tests if behavior changed)
-- [ ] Lint passes (`{{LINT_COMMAND}}`)
-- [ ] No TODO/FIXME left without `DECISIONS.md` entry
-- [ ] `CURRENT.md` updated with DONE/NEXT
-- [ ] Committed to git
-
-If ANY of these is false — task is "IN PROGRESS", not "DONE". State this explicitly.
+Do NOT modify without explicit instruction:
+- `.opencode/` — AI agent configuration (use `@PromptEngineer` or edit manually)
+- `.planning/DECISIONS.md` — append-only
+- `opencode.json` — runtime configuration
+- Any credential file: `.env*`, `~/.ssh/`, `~/.aws/`
 
 ---
 
-## 7. END OF EVERY RESPONSE
+## Testing
 
-**@Main** appends to `.planning/CURRENT.md` after every significant step:
+- Write a failing test before implementing when feasible (TDD preferred).
+- All existing tests must continue to pass after your change.
+- Network calls in tests → use mocks or test doubles, **never real endpoints**.
+- SQL only via parameterized queries — never concatenate user input into queries.
 
-```markdown
-## <ISO timestamp>
-- DONE: <what just happened, 1 line>
-- NEXT: <what should happen next, 1 line>
-- BLOCKED: <only if blocked>
-```
+---
 
-**Subagents** (@CodeWriter, @BugFixer, @debugger, @Designer, @QA, @CodeReviewer) do NOT write to CURRENT.md directly — they return output to @Main, who writes the checkpoint.
+## Security
+
+- **Never** write API keys, tokens, passwords, or secrets into code or commit messages.
+- **Never** read credential files (`~/.ssh/`, `~/.aws/`, `.env*`) unless the user explicitly requests it.
+- Flag any code handling auth, crypto, payments, or PII for review before commit.
+- SQL: parameterized queries only. No string concatenation with user input. Ever.
+
+---
+
+## Commit Guidelines
+
+One logical change per commit. Format: `<type>: <short description>`
+
+**Types:** `feat` · `fix` · `refactor` · `test` · `docs` · `chore`
+
+**Examples:**
+- `feat: add JWT refresh token endpoint`
+- `fix: null pointer in user login flow`
+- `refactor: extract payment validation to service`
+- `test: unit tests for auth token expiry`
+
+Do not commit `TODO` or `FIXME` without a corresponding entry in `.planning/DECISIONS.md`.
+
+---
+
+## Definition of Done
+
+A task is **complete** only when ALL of the following are true:
+
+- [ ] Code compiles: `{{COMPILE_COMMAND}}`
+- [ ] All tests pass (including new tests for any changed behaviour)
+- [ ] Lint passes: `{{LINT_COMMAND}}`
+- [ ] No unexplained `TODO` or `FIXME` remains
+- [ ] Changes committed to git with a descriptive message

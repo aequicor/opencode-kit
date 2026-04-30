@@ -1,0 +1,46 @@
+# opencode-kit profile: TypeScript / Next.js
+# Usage: set stack.profile: typescript-nextjs in your manifest
+# This profile pre-fills stack, lsp, formatter, and code_quality for a Next.js project.
+
+_profile_name: typescript-nextjs
+_profile_description: "TypeScript + Next.js (App Router) with ESLint and Prettier"
+
+stack:
+  language: typescript
+  build_command: "npm run build"
+  compile_command: "npx tsc --noEmit"
+  lint_command: "npm run lint"
+  test_command: "npm test -- --testPathPattern=[module]"
+
+lsp:
+  enabled: true
+  command: "typescript-language-server --stdio"
+  extensions: [".ts", ".tsx", ".js", ".jsx"]
+
+formatter:
+  enabled: true
+  name: "prettier"
+  command: ["npx", "prettier", "--write", "."]
+  extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".css", ".md"]
+
+code_quality:
+  forbidden_patterns:
+    - "any type annotation (use proper TypeScript types)"
+    - "console.log in production code (use a logger)"
+    - "// @ts-ignore or // @ts-nocheck without explanation"
+    - "Synchronous fs calls in async contexts (use fs/promises)"
+    - "Direct DOM manipulation outside useEffect"
+    - "Missing error boundaries around async client components"
+    - "Hardcoded localhost URLs (use environment variables)"
+    - "TODO() in production code without DECISIONS.md entry"
+    - "eval() or Function() constructor (XSS risk)"
+    - "dangerouslySetInnerHTML without sanitization"
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

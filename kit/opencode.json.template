@@ -6,8 +6,17 @@
     "AGENTS.md",
     ".opencode/_shared.md",
     ".planning/CURRENT.md",
-    ".planning/DECISIONS.md"
+    ".planning/DECISIONS.md",
+    "AUTO_MEMORY.md"
   ],
+  "hooks": {
+    "post_edit": [
+      "{{FORMATTER_HOOK_COMMAND}}"
+    ],
+    "pre_commit": [
+      "{{LINT_COMMAND}}"
+    ]
+  },
   "plugin": [
     "opencode-pty",
     "opencode-shell-strategy",
@@ -124,7 +133,19 @@
       "npm install*": "ask",
       "npm publish*": "deny",
       "pip install*": "ask",
-      "pip uninstall*": "ask"
+      "pip uninstall*": "ask",
+      "docker push*": "deny",
+      "docker run -d*": "ask",
+      "docker run*": "ask",
+      "docker compose up -d*": "ask",
+      "docker compose down*": "deny",
+      "docker rm*": "deny",
+      "kubectl delete*": "deny",
+      "kubectl apply*": "ask",
+      "terraform destroy*": "deny",
+      "terraform apply*": "ask",
+      "helm upgrade*": "ask",
+      "helm delete*": "deny"
     }
   }
 }
