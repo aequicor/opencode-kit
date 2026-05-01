@@ -28,20 +28,38 @@ Do NOT proceed to Phase 2 until you have an answer (or explicit blank acceptance
    Q3. One-line project description: [default: ""]
 
 ## 3. STACK PROFILE
-   Read this file to list available profiles:
-     https://raw.githubusercontent.com/aequicor/opencode-kit/main/profiles/
-   Available profiles:
-     • kotlin-multiplatform — KMP: Compose Desktop + Android + iOS + Ktor
-     • kotlin-jvm-ktor    — Pure Kotlin/JVM Ktor backend
-     • generic             — Any language (minimal defaults)
-     • ollama-cloud        — DeepSeek V4 Pro + Qwen models via ollama-cloud
+   Fetch the live profile list from the GitHub API:
+     https://api.github.com/repos/aequicor/opencode-kit/contents/profiles
+   Parse the JSON array and extract the "name" field (strip ".yaml") for each entry.
+
+   If the API fetch fails, use this hardcoded list:
+     • kotlin-multiplatform  — Kotlin Multiplatform (Compose Desktop + Android + iOS + Ktor)
+     • kotlin-jvm-ktor       — Kotlin/JVM Ktor backend
+     • typescript-nextjs     — TypeScript + Next.js (App Router) with ESLint + Prettier
+     • python-fastapi        — Python 3.11+ / FastAPI with Ruff, mypy, pytest
+     • java-spring           — Java 17+ / Spring Boot 3 + Maven + JUnit 5
+     • go-gin                — Go 1.22+ / Gin + golangci-lint + go test
+     • rust-actix            — Rust / Actix Web + Clippy + rustfmt + cargo test
+     • csharp-aspnet         — C# (.NET 8) / ASP.NET Core + xUnit
+     • minecraft-paper-plugin — Minecraft Paper Plugin (Kotlin / Gradle KTS, multi-module)
+     • ollama-cloud          — Ollama cloud-hosted LLMs (DeepSeek + Qwen), any language
+     • generic               — Any language (minimal defaults, fill manually)
 
    Q4. Which profile? [default: kotlin-multiplatform]
-       If the user says "unsure" or gives no answer, ask what language the project uses
-       and recommend the best match:
-         Kotlin + Multiplatform → kotlin-multiplatform
-         Kotlin JVM backend only  → kotlin-jvm-ktor
-         Anything else            → generic
+       Show the full list above to the user before asking.
+       If the user says "unsure" or gives no answer, ask what language/framework
+       the project uses and recommend the best match:
+         Kotlin Multiplatform (Desktop/Android/iOS) → kotlin-multiplatform
+         Kotlin JVM backend only                    → kotlin-jvm-ktor
+         TypeScript / Next.js / React               → typescript-nextjs
+         Python / FastAPI / Django / Flask          → python-fastapi
+         Java / Spring Boot                         → java-spring
+         Go / Gin / Echo / Fiber                    → go-gin
+         Rust / Actix / Axum / Rocket               → rust-actix
+         C# / ASP.NET Core                          → csharp-aspnet
+         Minecraft Paper plugin (Kotlin)            → minecraft-paper-plugin
+         Using Ollama cloud models                  → ollama-cloud
+         Anything else                              → generic
 
 ## 4. BUILD COMMANDS
    (Only if profile is "generic" OR user wants overrides)
