@@ -41,18 +41,31 @@ To add a new language:
 
 Central path reference: `.opencode/FILE_STRUCTURE.md`. Read it before creating any new file.
 
-## Documentation Layout
+## Documentation Layout — Knowledge Vault (.vault/)
 
-Each module uses the same structure under `docs/[module]/`:
+All documentation lives in `.vault/`, indexed by [KnowledgeOS](https://github.com/aequicor/KnowledgeOS).
+Structure follows [Diátaxis](https://diataxis.fr/) genre layout.
 
-| Subfolder | Contents | Who writes |
-|-----------|----------|------------|
-| `requirements/` | Business requirements | @Main |
-| `spec/` | Technical specifications | @Main, @CodeWriter |
-| `guidelines/` | Guidelines, patterns, library rules | @Main, @Designer, @CodeWriter |
-| `plans/` | Implementation plans (`*-plan.md`) and stage files (`*-stage-NN.md`) | @Main |
-| `reports/` | Bug fix reports | @BugFixer |
-| `documentation/` | General module docs | As needed |
+### Genre mapping
+
+| Genre | Question | Module Content | Who writes |
+|-------|----------|---------------|------------|
+| `concepts/<module>/` | **Why?** How is it structured? | requirements/, plans/ | @Main |
+| `reference/<module>/` | **What exists?** | spec/ (incl. test plans) | @Main, @CodeWriter, @QA |
+| `how-to/<module>/` | **How to do X?** | Implementation stage files | @Main |
+| `tutorials/<module>/` | **How to learn?** | Getting started, module docs | As needed |
+| `guidelines/<module>/` | **What rules to follow?** | Conventions, patterns, reports/ | @Main, @Designer, @CodeWriter, @BugFixer |
+| `guidelines/libs/` | **How to use library?** | External API cache | @CodeWriter, @BugFixer |
+
+Per-module path examples:
+- Requirements: `.vault/concepts/<module>/requirements/<feature>.md`
+- Spec: `.vault/reference/<module>/spec/<feature>.md`
+- Test plan: `.vault/reference/<module>/spec/<feature>-test-plan.md`
+- Implementation plan: `.vault/concepts/<module>/plans/<feature>-plan.md`
+- Stage files: `.vault/how-to/<module>/plans/<feature>-stage-NN.md`
+- Guidelines: `.vault/guidelines/<module>/<topic>.md`
+- Bug reports: `.vault/guidelines/<module>/reports/<bug-name>.md`
+- External API cache: `.vault/guidelines/libs/<lib>-<version>.md`
 
 **Indexing rule:** when creating or updating any document, immediately call `knowledge-my-app_write_guideline` (new) or `knowledge-my-app_update_doc` (update).
 
@@ -61,7 +74,7 @@ Each module uses the same structure under `docs/[module]/`:
 Always search `knowledge-my-app_search_docs` for documentation first, then full read of found documents. If vault returns nothing — `serena_search_symbols` for code, then `grep`/`glob`/`read` on the filesystem.
 
 ```
-1. knowledge-my-app_search_docs  → docs, guidelines, spec, requirements
+1. knowledge-my-app_search_docs  → .vault/ docs, guidelines, spec, requirements
 2. serena_find_symbol / serena_search_symbols → code symbols (classes, functions)
 3. grep / glob / read → filesystem (last resort)
 ```
@@ -83,7 +96,7 @@ Always search `knowledge-my-app_search_docs` for documentation first, then full 
 
 ## External API Lookup — KnowledgeOS-first, context7 conditional
 
-Documentation for external libraries is cached in the vault at `docs/external-apis/<lib>-<version>.md`. This reduces load on context7 (rate-limited) and gives deterministic results for the same versions.
+Documentation for external libraries is cached in the vault at `.vault/guidelines/libs/<lib>-<version>.md`. This reduces load on context7 (rate-limited) and gives deterministic results for the same versions.
 
 **Pipeline (in fallback order):**
 
@@ -95,7 +108,7 @@ Documentation for external libraries is cached in the vault at `docs/external-ap
       → rate-limit / not found / error → go to step 3.
 3. webfetch on canonical source URL (see project guidelines for URLs).
       → if none returns valid API → escalate to main agent.
-4. knowledge-my-app_write_guideline → docs/external-apis/<lib>-<version>.md
+4. knowledge-my-app_write_guideline → .vault/guidelines/libs/<lib>-<version>.md
       Frontmatter: lib, version, source, date.
       Body: imports, used API signatures, minimal example.
       This step is MANDATORY after successful step 2 or 3.
@@ -130,8 +143,10 @@ This reduces errors in multi-step tasks. For trivial actions (read known file, g
 
 ```
 PO ─► @Main (single entry point)
-        │   superpowers:writing-plans  → plan in docs/[module]/plans/
-        │   superpowers:executing-plans → stage-by-stage implementation
+        │   superpowers:brainstorming              → spec in .vault/reference/[module]/spec/
+        │   corner-case-refinement                 → .vault/concepts/[module]/plans/<feature>-corner-cases.md
+        │   superpowers:writing-plans              → plan in .vault/concepts/[module]/plans/
+        │   superpowers:executing-plans            → stage-by-stage implementation
         │   superpowers:subagent-driven-development → dispatch executors
         │   checkpoint → .planning/CURRENT.md after each step
         │
@@ -145,6 +160,13 @@ PO ─► @Main (single entry point)
         └─► @PromptEngineer (agent prompt maintenance)
 ```
 
+**Pipeline order:**
+1. `brainstorming` produces approved spec
+2. `corner-case-refinement` scans spec for edge cases → produces corner case register
+3. Critical/High corner cases feed into `writing-plans` as mandatory test tasks
+4. `writing-plans` produces implementation plan with corner case coverage
+5. `executing-plans` or `subagent-driven-development` implements plan
+
 **Single entry point — `@Main`.** Do not invoke other agents directly without @Main orchestration.
 
 ## File Access Matrix
@@ -152,11 +174,13 @@ PO ─► @Main (single entry point)
 | Zone | Who writes | Who reads |
 |------|-----------|-----------|
 | `src/`, `*/src/test/` | @CodeWriter, @BugFixer | all |
-| `docs/[module]/requirements/` | @Main | all |
-| `docs/[module]/spec/` | @Main, @CodeWriter | all |
-| `docs/[module]/guidelines/` | @Main, @Designer, @CodeWriter | all |
-| `docs/[module]/plans/` | @Main | all |
-| `docs/[module]/reports/` | @BugFixer | all |
+| `.vault/concepts/<module>/requirements/` | @Main | all |
+| `.vault/concepts/<module>/plans/` | @Main | all |
+| `.vault/reference/<module>/spec/` | @Main, @CodeWriter, @QA | all |
+| `.vault/how-to/<module>/plans/` | @Main | all |
+| `.vault/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
+| `.vault/guidelines/<module>/reports/` | @BugFixer | all |
+| `.vault/guidelines/libs/` | @CodeWriter, @BugFixer | all |
 | `.opencode/agents/`, `.opencode/skills/` | @PromptEngineer | all |
 | `.planning/CURRENT.md` | @Main (checkpoint after each step) | all |
 | `opencode.json`, build files | human (PO) | all |
@@ -176,6 +200,14 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 **NEVER replace hyphen with underscore.** Models do this automatically — resist it.
 
 ## MCP and Skills
+
+**Built-in skills:**
+- `corner-case-refinement` — systematic corner case discovery. Run during brainstorming (after design approval) and writing-plans (before task decomposition). Produces corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`.
+- `code-review-checklist` — pre-commit systematic review checklist.
+- `bug-retro` — post-bug root cause analysis and prevention.
+- `knowledge-graph` — semantic document indexing and cross-reference.
+- `look-up` — proactive external API documentation lookup.
+- `session-replay` — past session analysis for patterns.
 
 **MCP:**
 - `knowledge-my-app` — KnowledgeOS vault: search, create, update documentation. **Primary source** for project docs and cached external library guidelines. Always check first.

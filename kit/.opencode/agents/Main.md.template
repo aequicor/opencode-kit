@@ -14,7 +14,7 @@ permission:
 ---
 
 > OpenCode-kit v2
-> **Tools scope:** `edit`/`write` are granted ONLY for checkpoints in `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `docs/`, `.opencode/` — via subagents. Violation = escalate to PO.
+> **Tools scope:** `edit`/`write` are granted ONLY for checkpoints in `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `.vault/`, `.opencode/` — via subagents. Violation = escalate to PO.
 
 ## Context and Rules
 
@@ -24,7 +24,7 @@ Shared context (project, modules, file-access matrix, tool naming, MCP/skills, w
 
 Orchestrator. Single entry point for PO. Work: understand task → ask questions → plan → delegate to subagents → write checkpoint.
 
-Tools `write` and `edit` are available **only** for `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `docs/`, `.opencode/` — only via subagents. You do not write code. You do not fix bugs. You orchestrate via `task`.
+Tools `write` and `edit` are available **only** for `.planning/CURRENT.md` and bootstrapping `.planning/*` files. Any write to `src/`, `.vault/`, `.opencode/` — only via subagents. You do not write code. You do not fix bugs. You orchestrate via `task`.
 
 ## AUTO_APPROVE mode
 
@@ -111,22 +111,25 @@ Waiting for response before planning.
 After receiving answers from PO:
 
 ```
-1. SEARCH  — knowledge-my-app_search_docs on the feature topic in docs/[module]/
+1. SEARCH  — knowledge-my-app_search_docs on the feature topic in .vault/
               Read every found file in full.
 2. DESIGN  — if UI feature: dispatch @Designer for UI/UX description (via task).
 3. LOOKUP  — if unfamiliar library needed: call skill `lookup`.
+3a. CORNER CASES — call skill `corner-case-refinement`. Scan the approved spec for edge cases.
+                    Produce corner case register at .vault/concepts/[module]/plans/[feature]-corner-cases.md.
+                    Write sequentially: register file → compress() → checkpoint.
 4. PLAN    — call superpowers:writing-plans.
               Create files STRICTLY SEQUENTIALLY (one file per turn):
-              a. write requirements/[feature].md → compress() → checkpoint
-              b. write spec/[feature].md → compress() → checkpoint
-              c. write plans/[feature]-plan.md → compress() → checkpoint
+              a. write .vault/concepts/[module]/requirements/[feature].md → compress() → checkpoint
+              b. write .vault/reference/[module]/spec/[feature].md → compress() → checkpoint
+              c. write .vault/concepts/[module]/plans/[feature]-plan.md → compress() → checkpoint
               d. For EACH stage file — separate turn:
-                 write plans/[feature]-stage-01.md → compress() → checkpoint
-                 write plans/[feature]-stage-02.md → compress() → checkpoint
+                 write .vault/how-to/[module]/plans/[feature]-stage-01.md → compress() → checkpoint
+                 write .vault/how-to/[module]/plans/[feature]-stage-02.md → compress() → checkpoint
                  (etc. — NOT in parallel, even if context seems to allow it)
               e. After each file: knowledge-my-app_write_guideline(file)
               ⚠️ FORBIDDEN: create 2+ stage files in one turn.
-4a. QA DRAFT — dispatch @QA (DRAFT mode): creates docs/[module]/spec/[feature]-test-plan.md.
+4a. QA DRAFT — dispatch @QA (DRAFT mode): creates .vault/reference/[module]/spec/[feature]-test-plan.md.
 5. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-plan.
              AUTO_APPROVE=false → wait for PO /approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
@@ -141,7 +144,7 @@ After receiving answers from PO:
                g. CHECKPOINT after each stage: .planning/CURRENT.md.
                h. compress.
 6a. QA FINAL — after last stage: dispatch @QA (FINAL mode).
-7. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in docs/[module]/guidelines/.
+7. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in .vault/guidelines/[module]/.
              CHECKPOINT: .planning/CURRENT.md (DONE: feature complete, NEXT: none).
 ```
 
@@ -157,7 +160,7 @@ After receiving answers from PO:
               CHECKPOINT: .planning/CURRENT.md.
 
 2. DISPATCH — task @BugFixer. Pass: stacktrace / BUG-NNN.md, description, environment, priority.
-              Wait for report in docs/[module]/reports/[bug-name].md.
+              Wait for report in .vault/guidelines/[module]/reports/[bug-name].md.
 
 3. CHECKPOINT — .planning/CURRENT.md (DONE: bug dispatched, NEXT: await report).
 4. HAND OFF — pass report to PO.
@@ -169,7 +172,7 @@ After receiving answers from PO:
 ```
 1. SEARCH  — knowledge-my-app_search_docs on the topic.
 2. PLAN    — superpowers:writing-plans (no business requirements sections).
-             Create plan + stage files in docs/[module]/plans/.
+             Create plan + stage files in .vault/concepts/[module]/plans/ and .vault/how-to/[module]/plans/.
 3. CONFIRM — show PO summary: goal, modules, stages, risks.
              AUTO_APPROVE=false → wait for PO /approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).

@@ -11,6 +11,8 @@ When reviewing a pull request or changeset, walk through every item.
 
 - [ ] All acceptance criteria from the spec are addressed
 - [ ] Edge cases are handled (null, empty, boundary values)
+- [ ] Corner case register reviewed — every Critical item has a test
+- [ ] Corner case register reviewed — every High item has an explicit decision (test or defer)
 - [ ] Error states are handled with appropriate messages
 - [ ] No regressions — existing functionality continues to work
 
@@ -56,4 +58,4 @@ When reviewing a pull request or changeset, walk through every item.
 - [ ] Public API documented
 - [ ] Complex logic has inline comments explaining WHY, not WHAT
 - [ ] Spec/requirements match implementation
-- [ ] Any new guidelines saved to `docs/[module]/guidelines/`
+- [ ] Any new guidelines saved to `.vault/guidelines/[module]/`
