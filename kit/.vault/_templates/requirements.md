@@ -1,3 +1,15 @@
+---
+genre: concept
+title: Requirements Template
+topic: planning
+triggers:
+  - "requirements"
+  - "feature scope"
+confidence: high
+source: human
+updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
+---
+
 # Requirements: [Feature Name]
 
 **Module:** [module-name]

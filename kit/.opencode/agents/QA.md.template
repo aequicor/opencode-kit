@@ -19,13 +19,13 @@ permission:
 ## Context and Rules
 
 Shared context (project, modules, file-access matrix, tool naming) — `.opencode/_shared.md`.
-Template — `docs/_templates/test-plan.md`. Structure of `docs/` described in `.opencode/_shared.md` (Documentation Layout section).
+Template — `.vault/_templates/test-plan.md`. Structure of `.vault/` described in `.opencode/_shared.md` (Documentation Layout section).
 
 ## Role
 
 QA engineer. Creates and updates the test plan for a feature. Works in two modes — **DRAFT** and **FINAL** — determined from the task prompt.
 
-**Do not write test code.** Only the plan document in `docs/[module]/spec/[feature]-test-plan.md`.
+**Do not write test code.** Only the plan document in `.vault/reference/[module]/spec/[feature]-test-plan.md`.
 
 ## Project test patterns
 
@@ -49,8 +49,8 @@ Test files mirror `src/main/` structure:
 Called after creating spec and requirements, before implementation.
 
 ```
-1. READ  — spec file (docs/[module]/spec/[feature].md)
-           requirements file (docs/[module]/requirements/[feature].md)
+1. READ  — spec file (.vault/reference/[module]/spec/[feature].md)
+           requirements file (.vault/concepts/[module]/requirements/[feature].md)
            If missing → report in output and finish.
 2. UNIT  — for each class/function in spec, compose test cases:
            happy path + edge cases + error scenarios.
@@ -61,10 +61,10 @@ Called after creating spec and requirements, before implementation.
            steps written in plain language for PO (not developer).
            Steps: specific UI actions or API calls.
            Expected result: what PO sees/gets.
-5. WRITE — docs/[module]/spec/[feature]-test-plan.md (status = Draft)
-           following the template from docs/_templates/test-plan.md.
+5. WRITE — .vault/reference/[module]/spec/[feature]-test-plan.md (status = Draft)
+           following the template from .vault/_templates/test-plan.md.
 6. INDEX — knowledge-my-app_write_guideline.
-7. RETURN — one line: "Test plan DRAFT created: docs/[module]/spec/[feature]-test-plan.md"
+7. RETURN — one line: "Test plan DRAFT created: .vault/reference/[module]/spec/[feature]-test-plan.md"
 ```
 
 ## Pipeline — FINAL
@@ -72,7 +72,7 @@ Called after creating spec and requirements, before implementation.
 Called after all implementation stages are complete.
 
 ```
-1. READ  — draft test-plan (docs/[module]/spec/[feature]-test-plan.md).
+1. READ  — draft test-plan (.vault/reference/[module]/spec/[feature]-test-plan.md).
 2. FIND  — glob test files for the module.
            Read each file, find test classes and methods related to the feature.
 3. UNIT  — update Unit Tests table:
@@ -93,7 +93,7 @@ Called after all implementation stages are complete.
 
 ## Test plan document format
 
-Strictly follow the template from `docs/_templates/test-plan.md`. Key sections:
+Strictly follow the template from `.vault/_templates/test-plan.md`. Key sections:
 
 ```markdown
 # Test Plan: [Feature Name]

@@ -26,13 +26,14 @@ def _safe_target_path(base: Path, relative: str) -> Path | None:
     except ValueError:
         return None
 
+
 try:
     import yaml
 except ImportError:
     print("ERROR: PyYAML is required. Install with: pip install pyyaml")
     sys.exit(1)
 
-from core import (
+from core import (  # noqa: E402
     build_context,
     check_credentials,
     check_kit_version,
@@ -45,7 +46,7 @@ from core import (
     render,
     verify_output,
 )
-from core.context import _build_nested_context
+from core.context import _build_nested_context  # noqa: E402
 
 
 def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> None:
@@ -119,7 +120,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             nested_ctx["PROJECT_NAME"] = context["PROJECT_NAME"]
             target_nested = _safe_target_path(target, f"{src_root}/AGENTS.md")
             if target_nested is None:
-                print(f"  WARNING: Skipping module {m.get('name', '?')!r} — source_root {src_root!r} escapes target directory")
+                print(
+                    f"  WARNING: Skipping module {m.get('name', '?')!r} — source_root {src_root!r} escapes target directory"
+                )
                 continue
             if target_nested.exists() and not merge:
                 print(f"  SKIP (exists) {target_nested.relative_to(target)}")
@@ -148,14 +151,16 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
     print("\nApplying...")
     unresolved_report = []
 
-    for action, kit_file, target_path, is_template in actions:
+    for _action, kit_file, target_path, is_template in actions:
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         if is_template:
             try:
                 text = kit_file.read_text(encoding="utf-8")
             except UnicodeDecodeError:
-                print(f"  WARNING: {kit_file.name} is not valid UTF-8 — reading with replacement chars")
+                print(
+                    f"  WARNING: {kit_file.name} is not valid UTF-8 — reading with replacement chars"
+                )
                 text = kit_file.read_text(encoding="utf-8", errors="replace")
             try:
                 rendered = render(text, context)

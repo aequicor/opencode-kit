@@ -18,12 +18,12 @@ Activate when:
 ## Architecture
 
 ```
-docs/                    kit/.opencode/knowledge-graph/
-  requirements/                index.json         — document metadata
-  spec/                        embeddings.json    — vector storage (if available)
+.vault/                  kit/.opencode/knowledge-graph/
+  concepts/                    index.json         — document metadata
+  reference/                   embeddings.json    — vector storage (if available)
   guidelines/                  graph.json         — entity relationships
-  plans/
-  reports/
+  how-to/
+  tutorials/
 ```
 
 ## Algorithm
@@ -31,7 +31,7 @@ docs/                    kit/.opencode/knowledge-graph/
 ### 1. Index documents
 
 ```
-for each document in docs/:
+for each document in .vault/:
   1. Extract metadata (title, module, type, date, agent)
   2. Extract entities (classes, functions, APIs, concepts)
   3. Extract relationships (imports, references, "depends on", "implements")
@@ -75,7 +75,7 @@ Returns ranked results with path, excerpt, and related entities.
 |---------|-------------|
 | `import X` / `uses X` | depends_on |
 | `implements X` / `extends X` | implements |
-| `described in docs/X/` | documented_in |
+| `described in .vault/X/` | documented_in |
 | `tested in tests/X` | tested_by |
 | `see ADR-NNN` | references_decision |
 | `depends on X module` | module_dependency |

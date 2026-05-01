@@ -12,7 +12,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import apply as apply_mod
-from core import build_context, verify_output, KIT_VERSION
+from core import KIT_VERSION, build_context, verify_output
 
 SYSTEM_FILES = {".gitkeep"}
 
@@ -165,13 +165,16 @@ def test_full_apply_all_files_present(tmp_path):
     assert (target_dir / ".opencode" / "skills" / "look-up" / "SKILL.md").exists()
     assert (target_dir / ".opencode" / "skills" / "bug-retro" / "SKILL.md").exists()
 
-    # Docs scaffold
-    assert (target_dir / "docs" / "server" / "requirements" / ".gitkeep").exists()
-    assert (target_dir / "docs" / "server" / "spec" / ".gitkeep").exists()
-    assert (target_dir / "docs" / "server" / "guidelines" / ".gitkeep").exists()
-    assert (target_dir / "docs" / "server" / "plans" / ".gitkeep").exists()
-    assert (target_dir / "docs" / "server" / "reports" / ".gitkeep").exists()
-    assert (target_dir / "docs" / "client" / "requirements" / ".gitkeep").exists()
+    # Vault scaffold
+    vault_base = target_dir / ".vault"
+    assert (vault_base / "concepts" / "server" / "requirements" / ".gitkeep").exists()
+    assert (vault_base / "concepts" / "server" / "plans" / ".gitkeep").exists()
+    assert (vault_base / "reference" / "server" / "spec" / ".gitkeep").exists()
+    assert (vault_base / "how-to" / "server" / "plans" / ".gitkeep").exists()
+    assert (vault_base / "guidelines" / "server" / "reports" / ".gitkeep").exists()
+    assert (vault_base / "tutorials" / "server" / "documentation" / ".gitkeep").exists()
+    assert (vault_base / "guidelines" / "libs" / ".gitkeep").exists()
+    assert (vault_base / "concepts" / "client" / "requirements" / ".gitkeep").exists()
 
 
 def test_verify_output_after_full_apply(tmp_path):

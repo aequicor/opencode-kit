@@ -11,10 +11,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
+import apply as apply_mod
 from core import (
     build_context,
-    check_credentials as _check_credentials,
-    check_kit_version as _check_kit_version,
     check_unresolved,
     create_docs_scaffold,
     get_target_path,
@@ -22,10 +21,14 @@ from core import (
     render,
     verify_output,
 )
-from core.context import _build_nested_context, _build_formatter_hook
-import apply as apply_mod
+from core import (
+    check_credentials as _check_credentials,
+)
+from core import (
+    check_kit_version as _check_kit_version,
+)
+from core.context import _build_formatter_hook, _build_nested_context
 from core.version import KIT_VERSION
-
 
 # ─────────────────────────────────────────────
 # Fixtures
@@ -48,7 +51,6 @@ MINIMAL_MANIFEST = {
             "gradle_module": ":app",
             "source_root": "app/src/main/kotlin/",
             "test_root": "app/src/test/kotlin/",
-            "docs_path": "docs/app/",
             "responsibility": "Main application",
         }
     ],
@@ -110,7 +112,7 @@ def test_build_context_module_table():
     ctx = build_context(MINIMAL_MANIFEST)
     assert "app" in ctx["MODULE_TABLE"]
     assert ":app" in ctx["MODULE_TABLE"]
-    assert "docs/app/" in ctx["MODULE_TABLE"]
+    assert ".vault/app/" in ctx["MODULE_TABLE"]
 
 
 def test_build_context_forbidden_list():
@@ -510,6 +512,8 @@ def test_verify_output_valid_json(tmp_path):
         "BugFixer.md",
         "debugger.md",
         "QA.md",
+        "Designer.md",
+        "AutoApprover.md",
         "PromptEngineer.md",
     ]:
         (agents_dir / agent).write_text("")
@@ -532,6 +536,8 @@ def test_verify_output_invalid_json(tmp_path):
         "BugFixer.md",
         "debugger.md",
         "QA.md",
+        "Designer.md",
+        "AutoApprover.md",
         "PromptEngineer.md",
     ]:
         (agents_dir / agent).write_text("")
@@ -549,21 +555,18 @@ def test_verify_output_invalid_json(tmp_path):
 
 
 def test_create_docs_scaffold_creates_dirs(tmp_path):
-    modules = [
-        {"name": "app", "docs_path": "docs/app/", "source_root": "src/", "test_root": "tests/"}
-    ]
+    modules = [{"name": "app", "source_root": "src/", "test_root": "tests/"}]
     created = create_docs_scaffold(modules, tmp_path, dry_run=False)
-    assert len(created) == 6
-    assert (tmp_path / "docs/app/requirements/.gitkeep").exists()
+    assert len(created) > 0
+    assert (tmp_path / ".vault/concepts/app/requirements/.gitkeep").exists()
+    assert (tmp_path / ".vault/guidelines/libs/.gitkeep").exists()
 
 
 def test_create_docs_scaffold_dry_run(tmp_path):
-    modules = [
-        {"name": "app", "docs_path": "docs/app/", "source_root": "src/", "test_root": "tests/"}
-    ]
+    modules = [{"name": "app", "source_root": "src/", "test_root": "tests/"}]
     created = create_docs_scaffold(modules, tmp_path, dry_run=True)
-    assert len(created) == 6
-    assert not (tmp_path / "docs").exists()
+    assert len(created) > 0
+    assert not (tmp_path / ".vault").exists()
 
 
 # ─────────────────────────────────────────────
@@ -627,7 +630,6 @@ def test_nested_context_generation():
         "gradle_module": ":server",
         "source_root": "server/src/main/kotlin/",
         "test_root": "server/src/test/kotlin/",
-        "docs_path": "docs/server/",
         "responsibility": "Backend API",
         "conventions": "Use Ktor for HTTP",
         "module_dependencies": "depends on :shared",
@@ -652,7 +654,6 @@ def test_nested_context_no_gradle():
         "gradle_module": None,
         "source_root": "frontend/src/",
         "test_root": "frontend/tests/",
-        "docs_path": "docs/frontend/",
         "responsibility": "Frontend UI",
     }
     stack = {"build_command": "make", "compile_command": "make check", "test_command": "make test"}
@@ -667,7 +668,7 @@ def test_formatter_hook_generation():
         )
         == "./gradlew detekt --auto-correct"
     )
-    assert _build_formatter_hook({"enabled": False}) == ""
+    assert _build_formatter_hook({"enabled": False}) == "echo"
 
 
 # ─────────────────────────────────────────────

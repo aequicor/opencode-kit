@@ -27,16 +27,32 @@ def verify_output(target: Path, context: dict) -> list:
     if opencode_json.exists():
         try:
             with open(opencode_json, encoding="utf-8") as f:
-                json.load(f)
+                data = json.load(f)
         except json.JSONDecodeError as e:
             warnings.append(f"INVALID JSON in opencode.json: {e}")
+            data = None
 
-        content = opencode_json.read_text(encoding="utf-8")
-        if looks_like_key(content):
-            env_var = context.get("PROVIDER_API_KEY_ENV", "")
-            if env_var and f"env:{env_var}" not in content:
+        if data is not None:
+
+            def _scan_values(obj, path: str = "$") -> list[str]:
+                found = []
+                if isinstance(obj, str):
+                    if looks_like_key(obj):
+                        found.append(f"{path}: {obj[:20]}{'...' if len(obj) > 20 else ''}")
+                elif isinstance(obj, dict):
+                    for k, v in obj.items():
+                        if k.lower() in ("apikey", "api_key", "key", "token", "secret", "password"):
+                            continue
+                        found.extend(_scan_values(v, f"{path}.{k}"))
+                elif isinstance(obj, list):
+                    for i, v in enumerate(obj):
+                        found.extend(_scan_values(v, f"{path}[{i}]"))
+                return found
+
+            leaked = _scan_values(data)
+            for entry in leaked:
                 warnings.append(
-                    "opencode.json may contain a literal API key \u2014 verify it uses {env:VAR} syntax"
+                    f"opencode.json may contain a literal API key at {entry} \u2014 verify it uses {{env:VAR}} syntax"
                 )
 
     return warnings

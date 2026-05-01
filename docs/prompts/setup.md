@@ -67,7 +67,7 @@ Do NOT proceed to Phase 2 until you have an answer (or explicit blank acceptance
         [no default — REQUIRED]
      d) Test root (e.g. "server/src/test/kotlin/com/example/"):
         [no default — REQUIRED]
-     e) Docs path (e.g. "docs/server/"): [default: "docs/<name>/"]
+      e) Docs path (e.g. ".vault/"): [default: ".vault/<name>/"]
      f) Responsibility (one-line): [default: ""]
 
    If the target project has a settings.gradle.kts or build.gradle.kts,

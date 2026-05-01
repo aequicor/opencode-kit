@@ -3,8 +3,8 @@ Structured output models for agent responses.
 Uses Pydantic for validation and serialization.
 """
 
-from typing import Optional
 from enum import Enum
+from typing import Optional
 
 
 class FileAction(str, Enum):

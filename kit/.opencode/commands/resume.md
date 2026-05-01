@@ -8,7 +8,7 @@ Resume protocol — execute strictly, no shortcuts:
 2. READ `.planning/DECISIONS.md`.
 3. Run `git status` and `git log --oneline -10`.
 
-4. If CURRENT.md "NEXT" references a `docs/[module]/plans/` path:
+4. If CURRENT.md "NEXT" references a `.vault/concepts/[module]/plans/` path:
    - READ that plan file.
    - LIST stages in it and identify which are incomplete (no ✅ status).
 

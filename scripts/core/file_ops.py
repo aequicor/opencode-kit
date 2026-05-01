@@ -15,7 +15,7 @@ def render(template_text: str, context: dict) -> str:
     return pattern.sub(lambda m: str(context[m.group(1)]), template_text)
 
 
-def check_unresolved(rendered: str, source_path: str = "") -> list:
+def check_unresolved(rendered: str, _source_path: str = "") -> list:
     return re.findall(r"\{\{[A-Z_]+\}\}", rendered)
 
 
@@ -67,36 +67,36 @@ def collect_editor_files(kit_root: Path, editors: list) -> list:
     return files
 
 
+VAULT_GENRES = ["concepts", "reference", "how-to", "tutorials", "guidelines"]
+
+VAULT_GENRE_SUBDIRS = {
+    "concepts": ["requirements", "plans"],
+    "reference": ["spec"],
+    "how-to": ["plans"],
+    "tutorials": ["documentation"],
+    "guidelines": ["reports"],
+}
+
+
 def create_docs_scaffold(modules: list, target: Path, dry_run: bool) -> list:
     created = []
-    subdirs = [
-        "requirements",
-        "spec",
-        "guidelines",
-        "plans",
-        "reports",
-        "documentation",
-    ]
-    target_resolved = target.resolve()
     for m in modules:
-        docs_path = m.get("docs_path", f"docs/{m['name']}/")
-        # Validate path components before construction to catch traversal early
-        path_parts = Path(docs_path).parts
-        if docs_path.startswith("/") or any(part == ".." for part in path_parts):
-            print(f"  WARNING: Skipping unsafe docs_path {docs_path!r} — contains absolute path or '..'")
-            continue
-        try:
-            (target / docs_path).resolve().relative_to(target_resolved)
-        except ValueError:
-            print(f"  WARNING: Skipping unsafe docs_path {docs_path!r} — escapes target directory")
-            continue
-        for sub in subdirs:
-            dir_path = target / docs_path / sub
-            if not dir_path.exists():
-                created.append(str(dir_path))
-                if not dry_run:
-                    dir_path.mkdir(parents=True, exist_ok=True)
-                    (dir_path / ".gitkeep").touch()
+        module_name = m.get("name", "")
+        vault_module_root = target / ".vault"
+        for genre in VAULT_GENRES:
+            for sub in VAULT_GENRE_SUBDIRS.get(genre, []):
+                dir_path = vault_module_root / genre / module_name / sub
+                if not dir_path.exists():
+                    created.append(str(dir_path))
+                    if not dry_run:
+                        dir_path.mkdir(parents=True, exist_ok=True)
+                        (dir_path / ".gitkeep").touch()
+        guidelines_libs = vault_module_root / "guidelines" / "libs"
+        if not guidelines_libs.exists():
+            created.append(str(guidelines_libs))
+            if not dry_run:
+                guidelines_libs.mkdir(parents=True, exist_ok=True)
+                (guidelines_libs / ".gitkeep").touch()
     return created
 
 

@@ -119,6 +119,6 @@ Breaking changes applied: <yes / none>
 
 - **NEVER modify files outside the project root** (no writes to `/`, `/etc`, `~/.config`, etc.)
 - **NEVER delete user files** — `--merge` overwrites kit-managed files only (agents, skills, templates, opencode.json, AGENTS.md, _shared.md, FILE_STRUCTURE.md, .planning/ templates)
-- **NEVER touch `docs/` files created by users** — kit only writes `docs/_templates/` which are in `kit/docs/_templates/`
+- **NEVER touch `.vault/` files created by users** — kit only writes `.vault/_templates/` and `.vault/_INDEX.md` which are in `kit/.vault/`
 - **ALWAYS preserve `kit_version`** in the updated manifest
 - **If manifest.api_key_env contains a literal key** (32+ chars with dashes) → STOP and warn: "Security: manifest contains a real API key in api_key_env. Fix manually before proceeding."

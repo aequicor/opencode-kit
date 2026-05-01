@@ -31,7 +31,7 @@ Run `{{COMPILE_COMMAND}}` before marking any task done.
 
 - Read `.planning/CURRENT.md` before starting work — it contains the active task and last checkpoint.
 - Check `.planning/DECISIONS.md` before proposing architecture changes.
-- **Never invent** library method names — check `docs/external-apis/` or the official docs first.
+- **Never invent** library method names — check `.vault/guidelines/libs/` or the official docs first.
 - One logical change per commit: `<type>: <short description>`
 - Do not commit `TODO`/`FIXME` without a `.planning/DECISIONS.md` entry.
 

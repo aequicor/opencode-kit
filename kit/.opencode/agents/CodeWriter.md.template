@@ -53,7 +53,7 @@ Developer. You implement **one stage** of the plan: code + unit tests + build. Y
    (URLs list — in _shared.md). If still empty — escalate to main agent,
    do not write code from memory.
 4. (cache write — MANDATORY after 2 or 3) knowledge-my-app_write_guideline
-   → docs/external-apis/<lib>-<version>.md with frontmatter (lib, version, source, date)
+   → .vault/guidelines/libs/<lib>-<version>.md with frontmatter (lib, version, source, date)
    and exact signatures + minimal example. Investment: next agent gets API from vault
    without network calls.
 ```
@@ -63,7 +63,7 @@ Developer. You implement **one stage** of the plan: code + unit tests + build. Y
 Before writing **any** code:
 
 1. Read the stage file (passed in task prompt).
-1a. If `docs/[module]/spec/[feature]-test-plan.md` exists → read the **Unit Tests** and **Integration Tests** sections.
+1a. If `.vault/reference/[module]/spec/[feature]-test-plan.md` exists → read the **Unit Tests** and **Integration Tests** sections.
     Use them as coverage spec: your tests **must cover** all test cases from those tables.
 2. Read **all** guidelines from the "Guidelines for This Stage" section.
 3. Read related requirements + spec.

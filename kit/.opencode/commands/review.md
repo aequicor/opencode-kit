@@ -13,7 +13,7 @@ Review $SCOPE changes:
 2. For each changed file:
    - Read the diff: `git diff -- <file>` (or `--cached` for staged)
    - Read the full file for context
-   - Check against guidelines in `docs/[module]/guidelines/`
+   - Check against guidelines in `.vault/guidelines/[module]/`
    - Check security: input validation, SQL injection, token handling, PII
 
 3. Output review report:

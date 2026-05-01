@@ -1,10 +1,23 @@
+---
+genre: reference
+title: Spec Template
+topic: planning
+triggers:
+  - "spec"
+  - "api contract"
+  - "data model"
+confidence: high
+source: human
+updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
+---
+
 # Spec: [Feature Name]
 
 **Module:** [module-name]
 **Status:** Draft | Review | Approved
 **Date:** DD.MM.YYYY
 **Author:** @Main / @CodeWriter
-**Requirements:** [link to requirements file]
+**Requirements:** [[concepts/<module>/requirements/<feature>]]
 
 ---
 

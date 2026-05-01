@@ -37,7 +37,7 @@ cases:
     description: @CodeWriter reads before writing
     agent: CodeWriter
     input: |
-      Stage file: docs/server/plans/auth-stage-01.md
+      Stage file: .vault/how-to/server/plans/auth-stage-01.md
       Implement the POST /auth/login endpoint with request validation.
       Guidelines: use Ktor, return JWT token, validate email format.
     expected_patterns:
@@ -87,7 +87,7 @@ cases:
       Mode: DRAFT
       Feature: user-authentication
       Module: server
-      Spec: docs/server/spec/user-authentication.md
+      Spec: .vault/reference/server/spec/user-authentication.md
     expected_patterns:
       - "test plan"
       - "Unit Tests"

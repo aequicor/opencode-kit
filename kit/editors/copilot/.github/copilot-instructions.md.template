@@ -32,7 +32,7 @@
 
 - Read `.planning/CURRENT.md` before starting work.
 - Check `.planning/DECISIONS.md` before proposing architecture changes (append-only — never delete).
-- **Never invent** library API methods — always verify from `docs/external-apis/` or official docs.
+- **Never invent** library API methods — always verify from `.vault/guidelines/libs/` or official docs.
 - One logical change per commit: `<type>: <short description>` (feat/fix/refactor/test/docs/chore).
 
 ## Security

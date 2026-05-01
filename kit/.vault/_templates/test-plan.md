@@ -1,11 +1,24 @@
+---
+genre: reference
+title: Test Plan Template
+topic: testing
+triggers:
+  - "test plan"
+  - "qa"
+  - "test cases"
+confidence: high
+source: human
+updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
+---
+
 # Test Plan: [Feature Name]
 
 **Module:** [module-name]
 **Status:** Draft | Final
 **Date:** DD.MM.YYYY
 **Author:** @QA
-**Spec:** [link to spec file]
-**Requirements:** [link to requirements file]
+**Spec:** [[reference/<module>/spec/<feature>]]
+**Requirements:** [[concepts/<module>/requirements/<feature>]]
 
 ---
 

@@ -16,8 +16,8 @@ All kit templates are fetched from GitHub on the fly.
 import argparse
 import json
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 from pathlib import Path
 
 try:
@@ -37,6 +37,7 @@ from core import (
     render,
     verify_output,
 )
+from core.context import _build_nested_context
 
 KIT_REPO = "aequicor/opencode-kit"
 KIT_BRANCH = "main"
@@ -52,7 +53,9 @@ def _fetch_url(url: str, timeout: int = 30) -> str:
             try:
                 return raw.decode("utf-8")
             except UnicodeDecodeError:
-                print(f"  WARNING: {url} returned non-UTF-8 content — reading with replacement chars")
+                print(
+                    f"  WARNING: {url} returned non-UTF-8 content — reading with replacement chars"
+                )
                 return raw.decode("utf-8", errors="replace")
     except urllib.error.HTTPError as e:
         print(f"ERROR: Failed to fetch {url} \u2014 HTTP {e.code}")
@@ -117,10 +120,12 @@ def _hardcoded_kit_files(editors: list) -> list:
         "kit/.opencode/skills/bug-retro/SKILL.md",
         "kit/.planning/CURRENT.md.template",
         "kit/.planning/DECISIONS.md.template",
-        "kit/docs/_templates/bug-report.md",
-        "kit/docs/_templates/test-plan.md",
-        "kit/docs/_templates/spec.md",
-        "kit/docs/_templates/requirements.md",
+        "kit/.vault/_templates/bug-report.md",
+        "kit/.vault/_templates/test-plan.md",
+        "kit/.vault/_templates/spec.md",
+        "kit/.vault/_templates/requirements.md",
+        "kit/.vault/_INDEX.md.template",
+        "kit/nested/AGENTS.md.nested.template",
     ]
     editor_files = {
         "opencode": ["kit/editors/opencode/CLAUDE.md.template"],
@@ -188,6 +193,41 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         print(f"  {action:24s} -> {target_rel}")
 
     modules = manifest.get("modules", [])
+    stack = manifest.get("stack", {})
+
+    nested_template_url = f"{KIT_RAW_BASE}/kit/nested/AGENTS.md.nested.template"
+    try:
+        nested_template_text = _fetch_url(nested_template_url)
+    except SystemExit:
+        nested_template_text = None
+    except Exception as e:
+        print(f"  WARNING: Could not fetch nested template: {e} — skipping nested AGENTS.md")
+        nested_template_text = None
+
+    nested_actions = []
+    if nested_template_text:
+        for m in modules:
+            src_root = m.get("source_root", "")
+            if not src_root:
+                continue
+            nested_ctx = _build_nested_context(m, stack, context["PROJECT_NAME"])
+            nested_ctx["PROJECT_NAME"] = context["PROJECT_NAME"]
+            target_nested = target / src_root / "AGENTS.md"
+            try:
+                target_nested.resolve().relative_to(target_resolved)
+            except ValueError:
+                print(
+                    f"  WARNING: Skipping module {m.get('name', '?')!r} — source_root {src_root!r} escapes target directory"
+                )
+                continue
+            if target_nested.exists() and not merge:
+                print(f"  SKIP (exists) {target_nested.relative_to(target)}")
+                continue
+            nested_actions.append((target_nested, nested_ctx))
+            print(
+                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target) if target.exists() else target_nested}"
+            )
+
     scaffold_dirs = create_docs_scaffold(modules, target, dry_run=True)
     if scaffold_dirs:
         print(f"\n  CREATE DIRS ({len(scaffold_dirs)} doc directories):")
@@ -197,14 +237,17 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             print(f"    ... and {len(scaffold_dirs) - 10} more")
 
     if dry_run:
-        print(f"\n[DRY RUN] {len(actions)} files would be written. Run without --dry-run to apply.")
+        total = len(actions) + len(nested_actions)
+        print(
+            f"\n[DRY RUN] {total} files would be written ({len(actions)} base + {len(nested_actions)} nested). Run without --dry-run to apply."
+        )
         print_postinstall_checklist(context)
         return
 
     print("\nDownloading and applying files...")
     unresolved_report = []
 
-    for action, kit_rel, target_path, target_rel, is_template in actions:
+    for _action, kit_rel, target_path, target_rel, is_template in actions:
         url = f"{KIT_RAW_BASE}/{kit_rel}"
         print(f"  Fetching {url}")
         content = _fetch_url(url)
@@ -224,9 +267,20 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         else:
             target_path.write_text(content, encoding="utf-8")
 
+    for target_nested, nested_ctx in nested_actions:
+        target_nested.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            rendered = render(nested_template_text, nested_ctx)
+        except Exception as e:
+            print(f"  ERROR: Failed to render nested AGENTS.md for {target_nested}: {e}")
+            sys.exit(1)
+        target_nested.write_text(rendered, encoding="utf-8")
+
     create_docs_scaffold(modules, target, dry_run=False)
 
-    print(f"\nDone. {len(actions)} files written.")
+    print(
+        f"\n\u2705 Done. {len(actions)} base files + {len(nested_actions)} nested AGENTS.md written."
+    )
 
     if unresolved_report:
         print("\nUnresolved placeholders (fill these manually):")

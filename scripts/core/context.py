@@ -62,7 +62,9 @@ def _validate_manifest(manifest: dict) -> None:
         name = m.get("name", "")
         if name:
             if name in names_seen:
-                errors.append(f"  {prefix}.name {name!r} is duplicated — module names must be unique")
+                errors.append(
+                    f"  {prefix}.name {name!r} is duplicated — module names must be unique"
+                )
             names_seen.add(name)
 
         for path_field in ("source_root", "test_root", "docs_path"):
@@ -93,7 +95,7 @@ def _build_module_table(modules: list) -> str:
     for m in modules:
         gradle = m.get("gradle_module") or "\u2014"
         rows.append(
-            f"| `{m['name']}` | `{gradle}` | `{m['docs_path']}` | {m.get('responsibility', '')} |"
+            f"| `{m['name']}` | `{gradle}` | `.vault/{m['name']}/` | {m.get('responsibility', '')} |"
         )
     return header + separator + "\n".join(rows)
 
@@ -184,7 +186,7 @@ def _build_lsp_block(lsp: dict) -> str:
 
 
 def _build_module_docs_list(modules: list) -> str:
-    return "\n".join(f"- `{m['docs_path']}`" for m in modules)
+    return "\n".join(f"- `.vault/{m['name']}/`" for m in modules)
 
 
 def _build_module_names_list(modules: list) -> str:
@@ -210,7 +212,7 @@ def _build_cursor_globs(lsp: dict, stack: dict) -> str:
 
 def _build_formatter_hook(formatter_cfg: dict) -> str:
     if not formatter_cfg.get("enabled", False):
-        return ""
+        return "echo"
     return " ".join(formatter_cfg.get("command", []))
 
 
@@ -261,7 +263,7 @@ def _build_module_build_table(module: dict, stack: dict) -> str:
     )
 
 
-def _build_eval_template(agent_name: str, project_name: str) -> str:
+def _build_eval_template(agent_name: str, _project_name: str) -> str:
     eval_id = agent_name.lower().replace("@", "")
     return f"""---
 id: eval-{eval_id}-001
@@ -298,7 +300,7 @@ def _build_nested_context(module: dict, stack: dict, project_name: str) -> dict:
             "conventions", "(use project-default conventions from root AGENTS.md)"
         ),
         "MODULE_DEPENDENCIES": _build_module_dependency_list([module]),
-        "MODULE_DOCS_PATH": module.get("docs_path", f"docs/{module.get('name', '')}/"),
+        "MODULE_DOCS_PATH": f".vault/{module.get('name', '')}/",
     }
 
 
@@ -353,7 +355,9 @@ def build_context(manifest: dict) -> dict:
         "REVIEWER_MODEL": reviewer_model,
         "DESIGNER_MODEL": designer_model,
         "SMALL_MODEL": models.get("small", coder_model),
-        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.now(datetime.timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        ),
         "CONTEXT7_ENABLED": str(context7_cfg.get("enabled", True)).lower(),
         "CONTEXT7_API_KEY_ENV": context7_cfg.get("api_key_env", "CONTEXT7_API_KEY"),
         "KNOWLEDGE_ENABLED": str(knowledge_cfg.get("enabled", True)).lower(),

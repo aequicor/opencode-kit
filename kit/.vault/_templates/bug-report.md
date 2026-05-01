@@ -1,3 +1,16 @@
+---
+genre: guideline
+title: Bug Report Template
+topic: debugging
+triggers:
+  - "bug report"
+  - "root cause"
+  - "regression test"
+confidence: high
+source: human
+updated: {{ISO_TIMESTAMP_PLACEHOLDER}}
+---
+
 # Bug Fix Report: [Bug Name]
 
 **Date:** DD.MM.YYYY

@@ -4,6 +4,46 @@
 # Latest version is the FIRST entry.
 
 versions:
+  - version: "1.4.0"
+    date: "2026-05-01"
+    breaking: true
+    description: >
+      BREAKING: Migrated documentation from docs/ to .vault/ to align with
+      KnowledgeOS indexing. Documents organized by Diátaxis genres
+      (concepts, reference, how-to, tutorials, guidelines) per module.
+    manifest_changes:
+      changed_defaults:
+        - path: "modules[].docs_path"
+          description: "Default changed from docs/<name>/ to .vault/<name>/"
+          old_default: "docs/<name>/"
+          new_default: ".vault/<name>/"
+    files_changed:
+      - .vault/ (NEW — replaces docs/)
+      - .vault/_INDEX.md (NEW)
+      - .vault/_templates/*
+      - .vault/guidelines/libs/ (NEW)
+      - AGENTS.md
+      - .opencode/_shared.md
+      - .opencode/FILE_STRUCTURE.md
+      - .opencode/agents/*
+      - .opencode/commands/update.md
+      - .opencode/skills/*
+    migration_steps:
+      - action: rerun_apply
+        description: >
+          curl -sL https://raw.githubusercontent.com/aequicor/opencode-kit/main/scripts/apply_remote.py -o apply_remote.py
+          python3 apply_remote.py --manifest <manifest>.yaml --target . --merge
+          rm apply_remote.py
+      - action: manual_cleanup
+        description: >
+          Remove old docs/ folder if not manually populated:
+          rm -rf docs/
+    new_capabilities:
+      - "KnowledgeOS .vault/ integration with Diátaxis genre layout"
+      - "Vault _INDEX.md as agent entry point"
+      - "External API cache moved to .vault/guidelines/libs/"
+      - "Frontmatter (genre, topic, triggers, wikilinks) in document templates"
+
   - version: "1.3.0"
     date: "2026-04-30"
     breaking: false

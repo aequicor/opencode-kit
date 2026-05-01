@@ -32,7 +32,7 @@ Reviews the plan against spec and requirements and returns a structured verdict.
 Required fields:
 - `FEATURE_NAME` — name of the feature/bug/tech task
 - `TASK_TYPE` — FEATURE | BUG | TECH
-- `PLAN_FILE` — path to `docs/[module]/plans/[feature]-plan.md`
+- `PLAN_FILE` — path to `.vault/concepts/[module]/plans/[feature]-plan.md`
 - `REQUIREMENTS_FILE` — path to requirements (or `N/A`)
 - `SPEC_FILE` — path to spec (or `N/A`)
 
