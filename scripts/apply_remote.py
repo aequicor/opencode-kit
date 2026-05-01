@@ -41,15 +41,11 @@ from core import (
 KIT_REPO = "aequicor/opencode-kit"
 KIT_BRANCH = "main"
 KIT_RAW_BASE = f"https://raw.githubusercontent.com/{KIT_REPO}/{KIT_BRANCH}"
-KIT_API_BASE = (
-    f"https://api.github.com/repos/{KIT_REPO}/git/trees/{KIT_BRANCH}?recursive=1"
-)
+KIT_API_BASE = f"https://api.github.com/repos/{KIT_REPO}/git/trees/{KIT_BRANCH}?recursive=1"
 
 
 def _fetch_url(url: str, timeout: int = 30) -> str:
-    req = urllib.request.Request(
-        url, headers={"User-Agent": "opencode-kit-apply-remote/1.0"}
-    )
+    req = urllib.request.Request(url, headers={"User-Agent": "opencode-kit-apply-remote/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8")
@@ -188,9 +184,7 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             print(f"    ... and {len(scaffold_dirs) - 10} more")
 
     if dry_run:
-        print(
-            f"\n[DRY RUN] {len(actions)} files would be written. Run without --dry-run to apply."
-        )
+        print(f"\n[DRY RUN] {len(actions)} files would be written. Run without --dry-run to apply.")
         print_postinstall_checklist(context)
         return
 
@@ -238,12 +232,8 @@ def main():
         description="Apply opencode-kit to a target project (fetches templates from GitHub)"
     )
     parser.add_argument("--manifest", required=True, help="Path to manifest YAML file")
-    parser.add_argument(
-        "--target", required=True, help="Path to target project directory"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Preview without writing files"
-    )
+    parser.add_argument("--target", required=True, help="Path to target project directory")
+    parser.add_argument("--dry-run", action="store_true", help="Preview without writing files")
     parser.add_argument(
         "--merge",
         action="store_true",

@@ -14,10 +14,9 @@ class ModelPricing:
         self.output_per_1k = output_per_1k
 
     def estimate_cost(self, input_tokens: int, output_tokens: int) -> float:
-        return (
-            (input_tokens / 1000) * self.input_per_1k
-            + (output_tokens / 1000) * self.output_per_1k
-        )
+        return (input_tokens / 1000) * self.input_per_1k + (
+            output_tokens / 1000
+        ) * self.output_per_1k
 
 
 DEFAULT_PRICING = {
@@ -62,7 +61,9 @@ class CostTracker:
         self._budget = budget
         self._store_path = store_path
 
-    def record(self, agent_name: str, model: str, input_tokens: int, output_tokens: int) -> CostEntry:
+    def record(
+        self, agent_name: str, model: str, input_tokens: int, output_tokens: int
+    ) -> CostEntry:
         entry = CostEntry(agent_name, model, input_tokens, output_tokens)
         self._entries.append(entry)
         return entry
@@ -129,6 +130,7 @@ class CostTracker:
         }
         self._store_path.parent.mkdir(parents=True, exist_ok=True)
         import json
+
         self._store_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
         return self._store_path
 

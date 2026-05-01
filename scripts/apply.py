@@ -67,7 +67,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
     print()
 
     nested_template = kit_root / "nested" / "AGENTS.md.nested.template"
-    nested_template_text = nested_template.read_text(encoding="utf-8") if nested_template.exists() else None
+    nested_template_text = (
+        nested_template.read_text(encoding="utf-8") if nested_template.exists() else None
+    )
     stack = manifest.get("stack", {})
     modules = manifest.get("modules", [])
 
@@ -102,7 +104,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
                 print(f"  SKIP (exists) {target_nested.relative_to(target)}")
                 continue
             nested_actions.append((target_nested, nested_ctx))
-            print(f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target) if target.exists() else target_nested}")
+            print(
+                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target) if target.exists() else target_nested}"
+            )
 
     scaffold_dirs = create_docs_scaffold(modules, target, dry_run=True)
     if scaffold_dirs:
@@ -131,9 +135,7 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
             rendered = render(text, context)
             unresolved = check_unresolved(rendered, str(kit_file))
             if unresolved:
-                unresolved_report.append(
-                    (str(target_path.relative_to(target)), unresolved)
-                )
+                unresolved_report.append((str(target_path.relative_to(target)), unresolved))
             target_path.write_text(rendered, encoding="utf-8")
         else:
             shutil.copy2(kit_file, target_path)
@@ -145,7 +147,9 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
 
     create_docs_scaffold(modules, target, dry_run=False)
 
-    print(f"\n\u2705 Done. {len(actions)} base files + {len(nested_actions)} nested AGENTS.md written.")
+    print(
+        f"\n\u2705 Done. {len(actions)} base files + {len(nested_actions)} nested AGENTS.md written."
+    )
 
     if unresolved_report:
         print("\n\u26a0\ufe0f  Unresolved placeholders (fill these manually):")
@@ -164,16 +168,10 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Apply opencode-kit to a target project"
-    )
+    parser = argparse.ArgumentParser(description="Apply opencode-kit to a target project")
     parser.add_argument("--manifest", required=True, help="Path to manifest YAML file")
-    parser.add_argument(
-        "--target", required=True, help="Path to target project directory"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Preview without writing files"
-    )
+    parser.add_argument("--target", required=True, help="Path to target project directory")
+    parser.add_argument("--dry-run", action="store_true", help="Preview without writing files")
     parser.add_argument(
         "--merge",
         action="store_true",

@@ -15,39 +15,57 @@ class MetricsCollector:
         self._events: list[dict] = []
 
     def log_event(self, event_type: str, agent: str, details: dict):
-        self._events.append({
-            "type": event_type,
-            "agent": agent,
-            "timestamp": datetime.datetime.utcnow().isoformat(),
-            "details": details,
-        })
+        self._events.append(
+            {
+                "type": event_type,
+                "agent": agent,
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "details": details,
+            }
+        )
 
     def log_anti_loop(self, agent: str, symptom: str, action: str):
-        self.log_event("anti_loop", agent, {
-            "symptom": symptom,
-            "action_taken": action,
-        })
+        self.log_event(
+            "anti_loop",
+            agent,
+            {
+                "symptom": symptom,
+                "action_taken": action,
+            },
+        )
 
     def log_hitl(self, agent: str, gate: str, description: str, outcome: str):
-        self.log_event("hitl", agent, {
-            "gate": gate,
-            "description": description,
-            "outcome": outcome,
-        })
+        self.log_event(
+            "hitl",
+            agent,
+            {
+                "gate": gate,
+                "description": description,
+                "outcome": outcome,
+            },
+        )
 
     def log_error(self, agent: str, error_type: str, message: str, file: str = ""):
-        self.log_event("error", agent, {
-            "error_type": error_type,
-            "message": message,
-            "file": file,
-        })
+        self.log_event(
+            "error",
+            agent,
+            {
+                "error_type": error_type,
+                "message": message,
+                "file": file,
+            },
+        )
 
     def log_token_usage(self, agent: str, model: str, input_tokens: int, output_tokens: int):
-        self.log_event("token_usage", agent, {
-            "model": model,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-        })
+        self.log_event(
+            "token_usage",
+            agent,
+            {
+                "model": model,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+            },
+        )
 
     def save(self) -> Optional[Path]:
         if not self._dir:
@@ -75,8 +93,7 @@ class MetricsCollector:
 
         cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=days)
         recent = [
-            e for e in all_events
-            if datetime.datetime.fromisoformat(e["timestamp"]) >= cutoff
+            e for e in all_events if datetime.datetime.fromisoformat(e["timestamp"]) >= cutoff
         ]
 
         if not recent:
@@ -109,21 +126,25 @@ class MetricsCollector:
                 d = e["details"]
                 lines.append(f"  - @{e['agent']}: {d['symptom']} → {d['action_taken']}")
 
-        lines.extend([
-            "",
-            "## HITL Events",
-            f"- Count: {len(hitls)}",
-        ])
+        lines.extend(
+            [
+                "",
+                "## HITL Events",
+                f"- Count: {len(hitls)}",
+            ]
+        )
         if hitls:
             for e in hitls[:10]:
                 d = e["details"]
                 lines.append(f"  - {d['gate']}: {d['description']} → {d['outcome']}")
 
-        lines.extend([
-            "",
-            "## Errors",
-            f"- Count: {len(errors)}",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Errors",
+                f"- Count: {len(errors)}",
+            ]
+        )
         if errors:
             for e in errors[:10]:
                 d = e["details"]

@@ -501,8 +501,15 @@ def test_verify_output_valid_json(tmp_path):
     target = tmp_path / "project"
     agents_dir = target / ".opencode" / "agents"
     agents_dir.mkdir(parents=True)
-    for agent in ["Main.md", "CodeWriter.md", "CodeReviewer.md", "BugFixer.md",
-                   "debugger.md", "QA.md", "PromptEngineer.md"]:
+    for agent in [
+        "Main.md",
+        "CodeWriter.md",
+        "CodeReviewer.md",
+        "BugFixer.md",
+        "debugger.md",
+        "QA.md",
+        "PromptEngineer.md",
+    ]:
         (agents_dir / agent).write_text("")
 
     opencode_json = target / "opencode.json"
@@ -516,8 +523,15 @@ def test_verify_output_invalid_json(tmp_path):
     target = tmp_path / "project"
     agents_dir = target / ".opencode" / "agents"
     agents_dir.mkdir(parents=True)
-    for agent in ["Main.md", "CodeWriter.md", "CodeReviewer.md", "BugFixer.md",
-                   "debugger.md", "QA.md", "PromptEngineer.md"]:
+    for agent in [
+        "Main.md",
+        "CodeWriter.md",
+        "CodeReviewer.md",
+        "BugFixer.md",
+        "debugger.md",
+        "QA.md",
+        "PromptEngineer.md",
+    ]:
         (agents_dir / agent).write_text("")
 
     opencode_json = target / "opencode.json"
@@ -558,15 +572,18 @@ def test_create_docs_scaffold_dry_run(tmp_path):
 class TestApplyRemote:
     def test_apply_remote_import(self):
         import apply_remote
-        assert hasattr(apply_remote, 'apply')
+
+        assert hasattr(apply_remote, "apply")
 
     def test_apply_remote_kit_path_to_target(self):
         import apply_remote
+
         result = apply_remote.kit_path_to_target("kit/opencode.json.template")
         assert result == "opencode.json"
 
     def test_apply_remote_filter_by_editors(self):
         import apply_remote
+
         paths = [
             "kit/opencode.json.template",
             "kit/editors/opencode/CLAUDE.md.template",
@@ -579,18 +596,22 @@ class TestApplyRemote:
 
     def test_apply_remote_hardcoded_files(self):
         import apply_remote
+
         files = apply_remote._hardcoded_kit_files(["opencode"])
         assert any("kit/opencode.json.template" in f for f in files)
         assert any("CLAUDE.md" in f for f in files)
 
     def test_apply_remote_constant_values(self):
         import apply_remote
+
         assert apply_remote.KIT_REPO == "aequicor/opencode-kit"
         assert apply_remote.KIT_BRANCH == "main"
 
+
 def test_apply_remote_cli_exists():
     import apply_remote
-    assert hasattr(apply_remote, 'main')
+
+    assert hasattr(apply_remote, "main")
 
 
 # ─────────────────────────────────────────────
@@ -609,7 +630,11 @@ def test_nested_context_generation():
         "conventions": "Use Ktor for HTTP",
         "module_dependencies": "depends on :shared",
     }
-    stack = {"build_command": "./gradlew", "compile_command": "./gradlew compileKotlin", "test_command": "./gradlew :[module]:test"}
+    stack = {
+        "build_command": "./gradlew",
+        "compile_command": "./gradlew compileKotlin",
+        "test_command": "./gradlew :[module]:test",
+    }
     ctx = _build_nested_context(module, stack, "Test Project")
     assert ctx["MODULE_NAME"] == "server"
     assert ctx["MODULE_SOURCE_ROOT"] == "server/src/main/kotlin/"
@@ -634,7 +659,12 @@ def test_nested_context_no_gradle():
 
 
 def test_formatter_hook_generation():
-    assert _build_formatter_hook({"enabled": True, "command": ["./gradlew", "detekt", "--auto-correct"]}) == "./gradlew detekt --auto-correct"
+    assert (
+        _build_formatter_hook(
+            {"enabled": True, "command": ["./gradlew", "detekt", "--auto-correct"]}
+        )
+        == "./gradlew detekt --auto-correct"
+    )
     assert _build_formatter_hook({"enabled": False}) == ""
 
 
@@ -645,6 +675,7 @@ def test_formatter_hook_generation():
 
 def test_cost_tracker_basic():
     from core.costs import CostTracker
+
     tracker = CostTracker(budget=10.0)
     entry = tracker.record("CodeWriter", "qwen/qwen3-coder-next", 500, 200)
     assert entry.agent_name == "CodeWriter"
@@ -655,6 +686,7 @@ def test_cost_tracker_basic():
 
 def test_cost_tracker_over_budget():
     from core.costs import CostTracker
+
     tracker = CostTracker(budget=0.001)
     tracker.record("Test", "qwen/qwen3-coder-next", 5000, 5000)
     assert tracker.is_over_budget()
@@ -662,6 +694,7 @@ def test_cost_tracker_over_budget():
 
 def test_cost_tracker_summary():
     from core.costs import CostTracker
+
     tracker = CostTracker(budget=5.0)
     tracker.record("Main", "deepseek/deepseek-v4-pro", 1000, 500)
     s = tracker.summary()
@@ -673,12 +706,14 @@ def test_cost_tracker_summary():
 
 def test_cost_tracker_remaining():
     from core.costs import CostTracker
+
     tracker = CostTracker(budget=5.0)
     assert tracker.remaining_budget() == 5.0
 
 
 def test_default_pricing():
     from core.costs import DEFAULT_PRICING
+
     assert "moonshotai/kimi-k2.6" in DEFAULT_PRICING
     pricing = DEFAULT_PRICING["moonshotai/kimi-k2.6"]
     cost = pricing.estimate_cost(1000, 500)
@@ -692,6 +727,7 @@ def test_default_pricing():
 
 def test_metrics_collector_events(tmp_path):
     from core.metrics import MetricsCollector
+
     mc = MetricsCollector(store_dir=tmp_path)
     mc.log_anti_loop("Main", "Same task twice", "STOP")
     mc.log_hitl("Main", "DEPLOY", "Pushing to prod", "approved")
@@ -704,6 +740,7 @@ def test_metrics_collector_events(tmp_path):
 
 def test_metrics_generate_report(tmp_path):
     from core.metrics import MetricsCollector
+
     mc = MetricsCollector(store_dir=tmp_path)
     mc.log_anti_loop("Main", "Loop", "Stopped")
     mc.save()

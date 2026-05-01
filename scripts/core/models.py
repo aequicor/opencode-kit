@@ -42,7 +42,9 @@ class CodeWriterOutput:
             return f"## Changed Files \u2014 Stage {self.stage}\n\nNo files changed."
 
         header = f"## Changed Files \u2014 Stage {self.stage}\n\n"
-        table_header = "| File | Action | Lines | Description |\n|------|--------|-------|-------------|\n"
+        table_header = (
+            "| File | Action | Lines | Description |\n|------|--------|-------|-------------|\n"
+        )
         rows = "\n".join(cf.to_markdown_row() for cf in self.changed_files)
         return header + table_header + rows
 
@@ -210,26 +212,30 @@ class BugFixReport:
         for f in self.files_changed:
             lines.append(f"| `{f.path}` | {f.description} |")
 
-        lines.extend([
-            "",
-            "## Regression Test",
-            "| Test File | Test Name | Coverage |",
-            "|-----------|-----------|----------|",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Regression Test",
+                "| Test File | Test Name | Coverage |",
+                "|-----------|-----------|----------|",
+            ]
+        )
 
         for test in self.regression_tests:
             lines.append(f"| {test} | - | - |")
 
-        lines.extend([
-            "",
-            "## Verification",
-            "- [x] Unit test passes",
-            "- [x] All module tests pass",
-            "- [x] Code review approved",
-            "- [x] Build successful",
-            "",
-            "## Lessons Learned",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Verification",
+                "- [x] Unit test passes",
+                "- [x] All module tests pass",
+                "- [x] Code review approved",
+                "- [x] Build successful",
+                "",
+                "## Lessons Learned",
+            ]
+        )
 
         for lesson in self.lessons:
             lines.append(f"- {lesson}")

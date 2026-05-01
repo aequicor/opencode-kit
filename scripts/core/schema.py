@@ -11,6 +11,7 @@ _SCHEMA_PATH = Path(__file__).parent.parent.parent / "kit" / "manifest.schema.js
 def _load_schema():
     try:
         import jsonschema
+
         return jsonschema
     except ImportError:
         return None

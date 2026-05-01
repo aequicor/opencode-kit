@@ -11,8 +11,15 @@ from typing import Optional
 
 class AgentRun:
     __slots__ = (
-        "agent_name", "task_id", "model", "start_time", "end_time",
-        "status", "tokens_used", "files_changed", "error",
+        "agent_name",
+        "task_id",
+        "model",
+        "start_time",
+        "end_time",
+        "status",
+        "tokens_used",
+        "files_changed",
+        "error",
     )
 
     def __init__(
@@ -121,7 +128,13 @@ class TelemetryStore:
         breakdown = {}
         for r in self._runs:
             if r.agent_name not in breakdown:
-                breakdown[r.agent_name] = {"runs": 0, "success": 0, "failed": 0, "tokens": 0, "duration_ms": 0}
+                breakdown[r.agent_name] = {
+                    "runs": 0,
+                    "success": 0,
+                    "failed": 0,
+                    "tokens": 0,
+                    "duration_ms": 0,
+                }
             breakdown[r.agent_name]["runs"] += 1
             if r.status == "success":
                 breakdown[r.agent_name]["success"] += 1

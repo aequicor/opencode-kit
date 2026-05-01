@@ -133,8 +133,14 @@ def test_full_apply_all_files_present(tmp_path):
     agents_dir = target_dir / ".opencode" / "agents"
     assert agents_dir.exists()
     expected_agents = [
-        "Main.md", "CodeWriter.md", "CodeReviewer.md", "BugFixer.md",
-        "debugger.md", "QA.md", "Designer.md", "PromptEngineer.md",
+        "Main.md",
+        "CodeWriter.md",
+        "CodeReviewer.md",
+        "BugFixer.md",
+        "debugger.md",
+        "QA.md",
+        "Designer.md",
+        "PromptEngineer.md",
     ]
     for agent in expected_agents:
         assert (agents_dir / agent).exists(), f"Missing: {agent}"
@@ -353,7 +359,9 @@ def test_manifest_with_designer_null_omits_designer(tmp_path):
     )
 
     designer_md = target_dir / ".opencode" / "agents" / "Designer.md"
-    assert designer_md.exists(), "Designer.md should still be created but model may be coder fallback"
+    assert designer_md.exists(), (
+        "Designer.md should still be created but model may be coder fallback"
+    )
 
     # Check MODEL_TABLE has no unresolved placeholders
     shared_md = target_dir / ".opencode" / "_shared.md"

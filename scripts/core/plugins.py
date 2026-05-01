@@ -49,6 +49,7 @@ def discover_plugins(kit_root: Path) -> list[KitPlugin]:
     for yaml_file in sorted(plugins_dir.glob("*.yaml")):
         try:
             import yaml
+
             with open(yaml_file) as f:
                 data = yaml.safe_load(f)
 
@@ -86,6 +87,7 @@ def merge_plugin_files(
         dest = base / "agents" / agent_path.name
         if not dest.exists() and not dry_run:
             import shutil
+
             shutil.copy2(agent_path, dest)
             created.append(str(dest))
 
@@ -95,6 +97,7 @@ def merge_plugin_files(
         if not dry_run:
             dest_dir.mkdir(parents=True, exist_ok=True)
             import shutil
+
             for f in skill_dir.rglob("*"):
                 if f.is_file():
                     shutil.copy2(f, dest_dir / f.name)
@@ -104,6 +107,7 @@ def merge_plugin_files(
         dest = base / "commands" / cmd_path.name
         if not dest.exists() and not dry_run:
             import shutil
+
             shutil.copy2(cmd_path, dest)
             created.append(str(dest))
 

@@ -209,7 +209,9 @@ def _build_nested_context(module: dict, stack: dict, project_name: str) -> dict:
         "MODULE_RESPONSIBILITY": module.get("responsibility", ""),
         "MODULE_GRADLE_LINE": _build_module_gradle_line(module),
         "MODULE_BUILD_TABLE": _build_module_build_table(module, stack),
-        "MODULE_CONVENTIONS": module.get("conventions", "(use project-default conventions from root AGENTS.md)"),
+        "MODULE_CONVENTIONS": module.get(
+            "conventions", "(use project-default conventions from root AGENTS.md)"
+        ),
         "MODULE_DEPENDENCIES": _build_module_dependency_list([module]),
         "MODULE_DOCS_PATH": module.get("docs_path", f"docs/{module.get('name', '')}/"),
     }
@@ -265,9 +267,7 @@ def build_context(manifest: dict) -> dict:
         "REVIEWER_MODEL": reviewer_model,
         "DESIGNER_MODEL": designer_model,
         "SMALL_MODEL": models.get("small", coder_model),
-        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.utcnow().strftime(
-            "%Y-%m-%dT%H:%M:%SZ"
-        ),
+        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "CONTEXT7_ENABLED": str(context7_cfg.get("enabled", True)).lower(),
         "CONTEXT7_API_KEY_ENV": context7_cfg.get("api_key_env", "CONTEXT7_API_KEY"),
         "KNOWLEDGE_ENABLED": str(knowledge_cfg.get("enabled", True)).lower(),

@@ -9,7 +9,5 @@ def check_kit_version(manifest: dict) -> None:
         print(
             f"WARNING: manifest kit_version={manifest_version!r} but this script is {KIT_VERSION!r}."
         )
-        print(
-            "  Some templates may have changed. Run with --merge to overwrite existing files."
-        )
+        print("  Some templates may have changed. Run with --merge to overwrite existing files.")
         print()

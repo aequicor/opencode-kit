@@ -115,6 +115,7 @@ def load_suite(suite_file: Path) -> Optional[EvalSuite]:
 
     try:
         import yaml
+
         with open(suite_file) as f:
             data = yaml.safe_load(f)
 

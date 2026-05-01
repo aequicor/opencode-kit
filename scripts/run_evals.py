@@ -41,6 +41,7 @@ def run_evals(suites_dir: Path, output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     import json
+
     report = {
         "suites": suite_count,
         "cases": case_count,
@@ -51,6 +52,7 @@ def run_evals(suites_dir: Path, output_dir: Path):
     }
 
     import datetime
+
     report_file = output_dir / f"eval-report-{datetime.date.today().isoformat()}.json"
     report_file.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"\nReport saved: {report_file}")
@@ -59,8 +61,12 @@ def run_evals(suites_dir: Path, output_dir: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="Run opencode-kit eval suites")
-    parser.add_argument("--suites", default="kit/.opencode/evals", help="Path to eval suites directory")
-    parser.add_argument("--output", default=".opencode/metrics", help="Output directory for reports")
+    parser.add_argument(
+        "--suites", default="kit/.opencode/evals", help="Path to eval suites directory"
+    )
+    parser.add_argument(
+        "--output", default=".opencode/metrics", help="Output directory for reports"
+    )
     args = parser.parse_args()
 
     project_root = Path(__file__).parent.parent
