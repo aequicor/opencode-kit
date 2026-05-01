@@ -125,11 +125,11 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
                 )
                 continue
             if target_nested.exists() and not merge:
-                print(f"  SKIP (exists) {target_nested.relative_to(target)}")
+                print(f"  SKIP (exists) {target_nested.relative_to(target_resolved)}")
                 continue
             nested_actions.append((target_nested, nested_ctx))
             print(
-                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target) if target.exists() else target_nested}"
+                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target_resolved) if target.exists() else target_nested}"
             )
 
     scaffold_dirs = create_docs_scaffold(modules, target, dry_run=True)

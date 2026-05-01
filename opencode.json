@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "deepseek/deepseek-v4-pro",
+  "small_model": "deepseek/deepseek-v4-flash",
+  "mcp": {
+    "duckduckgo": {
+      "type": "local",
+      "command": ["docker", "run", "-i", "--rm", "mcp/duckduckgo"],
+      "enabled": true
+    }
+  }
+}

@@ -26,6 +26,47 @@ except ImportError:
     print("ERROR: PyYAML is required. Install with: pip install pyyaml")
     sys.exit(1)
 
+# Bootstrap: download core package from GitHub if not available (standalone mode).
+# When run via `curl ... | python3`, there is no local `core/` package.
+try:
+    import core as _core_check  # noqa: F401
+
+    del _core_check
+except ImportError:
+    import tempfile
+
+    _tmp_dir = Path(tempfile.mkdtemp())
+    _core_dir = _tmp_dir / "core"
+    _core_dir.mkdir()
+    _core_files = [
+        "__init__.py",
+        "context.py",
+        "costs.py",
+        "credentials.py",
+        "evaluation.py",
+        "file_ops.py",
+        "metrics.py",
+        "models.py",
+        "plugins.py",
+        "prompts.py",
+        "schema.py",
+        "telemetry.py",
+        "verify.py",
+        "version.py",
+    ]
+    _raw_core = "https://raw.githubusercontent.com/aequicor/opencode-kit/main/scripts/core"
+    print("Downloading core modules from GitHub (standalone mode)...")
+    for _f in _core_files:
+        _url = f"{_raw_core}/{_f}"
+        _req = urllib.request.Request(_url, headers={"User-Agent": "opencode-kit-apply-remote/1.0"})
+        try:
+            with urllib.request.urlopen(_req, timeout=30) as _resp:
+                (_core_dir / _f).write_bytes(_resp.read())
+        except Exception as _e:
+            print(f"ERROR: Failed to download core/{_f} from GitHub: {_e}")
+            sys.exit(1)
+    sys.path.insert(0, str(_tmp_dir))
+
 from core import (
     build_context,
     check_credentials,
@@ -221,11 +262,11 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
                 )
                 continue
             if target_nested.exists() and not merge:
-                print(f"  SKIP (exists) {target_nested.relative_to(target)}")
+                print(f"  SKIP (exists) {target_nested.relative_to(target_resolved)}")
                 continue
             nested_actions.append((target_nested, nested_ctx))
             print(
-                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target) if target.exists() else target_nested}"
+                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target_resolved) if target.exists() else target_nested}"
             )
 
     scaffold_dirs = create_docs_scaffold(modules, target, dry_run=True)
