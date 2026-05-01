@@ -48,7 +48,12 @@ def _fetch_url(url: str, timeout: int = 30) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "opencode-kit-apply-remote/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.read().decode("utf-8")
+            raw = resp.read()
+            try:
+                return raw.decode("utf-8")
+            except UnicodeDecodeError:
+                print(f"  WARNING: {url} returned non-UTF-8 content — reading with replacement chars")
+                return raw.decode("utf-8", errors="replace")
     except urllib.error.HTTPError as e:
         print(f"ERROR: Failed to fetch {url} \u2014 HTTP {e.code}")
         sys.exit(1)
@@ -72,8 +77,10 @@ def _fetch_kit_file_list(editors: list) -> list:
         ]
         return _filter_by_editors(all_paths, editors)
     except Exception as e:
-        print(f"ERROR: Could not list kit files from GitHub API: {e}")
-        print("  Falling back to hardcoded file list.")
+        print(f"WARNING: Could not list kit files from GitHub API: {e}")
+        print("  Falling back to hardcoded file list — your installation may be incomplete.")
+        print("  Some recently added files may be missing. Check the repo for the full list:")
+        print(f"  https://github.com/{KIT_REPO}")
         return _hardcoded_kit_files(editors)
 
 
@@ -137,7 +144,7 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         print(f"ERROR: target directory does not exist: {target}")
         sys.exit(1)
 
-    with open(manifest_file) as f:
+    with open(manifest_file, encoding="utf-8") as f:
         manifest = yaml.safe_load(f)
 
     check_credentials(manifest)
@@ -158,10 +165,16 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
     print()
 
     actions = []
+    target_resolved = target.resolve()
 
     for kit_rel in sorted(kit_files):
         target_rel = kit_path_to_target(kit_rel)
         target_path = target / target_rel
+        try:
+            target_path.resolve().relative_to(target_resolved)
+        except ValueError:
+            print(f"  WARNING: Skipping {kit_rel!r} — resolved path escapes target directory")
+            continue
         is_template = kit_rel.endswith(".template")
         action = "RENDER" if is_template else "COPY"
 
@@ -199,7 +212,11 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         if is_template:
-            rendered = render(content, context)
+            try:
+                rendered = render(content, context)
+            except Exception as e:
+                print(f"  ERROR: Failed to render {kit_rel}: {e}")
+                sys.exit(1)
             unresolved = check_unresolved(rendered, kit_rel)
             if unresolved:
                 unresolved_report.append((target_rel, unresolved))

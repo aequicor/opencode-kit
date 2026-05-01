@@ -50,7 +50,7 @@ def discover_plugins(kit_root: Path) -> list[KitPlugin]:
         try:
             import yaml
 
-            with open(yaml_file) as f:
+            with open(yaml_file, encoding="utf-8") as f:
                 data = yaml.safe_load(f)
 
             if not data or not data.get("name"):

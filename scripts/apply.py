@@ -9,10 +9,22 @@ Usage:
     python3 scripts/apply.py --manifest my-project.yaml --target /path/to/project --merge
 """
 
+from __future__ import annotations
+
 import argparse
 import shutil
 import sys
 from pathlib import Path
+
+
+def _safe_target_path(base: Path, relative: str) -> Path | None:
+    """Resolve path within base; return None if it would escape base."""
+    try:
+        resolved = (base / relative).resolve()
+        resolved.relative_to(base.resolve())
+        return resolved
+    except ValueError:
+        return None
 
 try:
     import yaml
@@ -49,7 +61,7 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         print(f"ERROR: kit/ directory not found at {kit_root}")
         sys.exit(1)
 
-    with open(manifest_file) as f:
+    with open(manifest_file, encoding="utf-8") as f:
         manifest = yaml.safe_load(f)
 
     check_credentials(manifest)
@@ -75,8 +87,14 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
 
     actions = []
 
+    target_resolved = target.resolve()
     for kit_file in sorted(kit_files):
         target_path = get_target_path(kit_file, kit_root, target)
+        try:
+            target_path.resolve().relative_to(target_resolved)
+        except ValueError:
+            print(f"  WARNING: Skipping {kit_file.name} — resolved path escapes target directory")
+            continue
         is_template = kit_file.name.endswith(".template")
         action = "RENDER" if is_template else "COPY"
 
@@ -92,14 +110,17 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         )
 
     nested_actions = []
-    if nested_template_text and not dry_run:
+    if nested_template_text:
         for m in modules:
             src_root = m.get("source_root", "")
             if not src_root:
                 continue
             nested_ctx = _build_nested_context(m, stack, context["PROJECT_NAME"])
             nested_ctx["PROJECT_NAME"] = context["PROJECT_NAME"]
-            target_nested = target / src_root / "AGENTS.md"
+            target_nested = _safe_target_path(target, f"{src_root}/AGENTS.md")
+            if target_nested is None:
+                print(f"  WARNING: Skipping module {m.get('name', '?')!r} — source_root {src_root!r} escapes target directory")
+                continue
             if target_nested.exists() and not merge:
                 print(f"  SKIP (exists) {target_nested.relative_to(target)}")
                 continue
@@ -131,8 +152,16 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         if is_template:
-            text = kit_file.read_text(encoding="utf-8")
-            rendered = render(text, context)
+            try:
+                text = kit_file.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                print(f"  WARNING: {kit_file.name} is not valid UTF-8 — reading with replacement chars")
+                text = kit_file.read_text(encoding="utf-8", errors="replace")
+            try:
+                rendered = render(text, context)
+            except Exception as e:
+                print(f"  ERROR: Failed to render {kit_file.name}: {e}")
+                sys.exit(1)
             unresolved = check_unresolved(rendered, str(kit_file))
             if unresolved:
                 unresolved_report.append((str(target_path.relative_to(target)), unresolved))
@@ -142,7 +171,11 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
 
     for target_nested, nested_ctx in nested_actions:
         target_nested.parent.mkdir(parents=True, exist_ok=True)
-        rendered = render(nested_template_text, nested_ctx)
+        try:
+            rendered = render(nested_template_text, nested_ctx)
+        except Exception as e:
+            print(f"  ERROR: Failed to render nested AGENTS.md for {target_nested}: {e}")
+            sys.exit(1)
         target_nested.write_text(rendered, encoding="utf-8")
 
     create_docs_scaffold(modules, target, dry_run=False)

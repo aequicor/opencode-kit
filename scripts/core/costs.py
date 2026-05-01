@@ -42,7 +42,7 @@ class CostEntry:
         self.output_tokens = output_tokens
         pricing = DEFAULT_PRICING.get(model, ModelPricing(1.0, 4.0))
         self.cost = pricing.estimate_cost(input_tokens, output_tokens)
-        self.timestamp = datetime.datetime.utcnow()
+        self.timestamp = datetime.datetime.now(datetime.timezone.utc)
 
     def to_dict(self) -> dict:
         return {
@@ -126,7 +126,7 @@ class CostTracker:
         data = {
             "summary": self.summary(),
             "history": [e.to_dict() for e in self._entries],
-            "saved_at": datetime.datetime.utcnow().isoformat(),
+            "saved_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         }
         self._store_path.parent.mkdir(parents=True, exist_ok=True)
         import json

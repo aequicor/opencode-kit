@@ -1,12 +1,18 @@
+import functools
 import re
 from pathlib import Path
 
 
+@functools.lru_cache(maxsize=16)
+def _compile_render_pattern(keys: frozenset) -> re.Pattern:
+    return re.compile(r"\{\{(" + "|".join(re.escape(k) for k in sorted(keys)) + r")\}\}")
+
+
 def render(template_text: str, context: dict) -> str:
-    result = template_text
-    for key, value in context.items():
-        result = result.replace("{{" + key + "}}", str(value))
-    return result
+    if not context:
+        return template_text
+    pattern = _compile_render_pattern(frozenset(context.keys()))
+    return pattern.sub(lambda m: str(context[m.group(1)]), template_text)
 
 
 def check_unresolved(rendered: str, source_path: str = "") -> list:
@@ -71,8 +77,19 @@ def create_docs_scaffold(modules: list, target: Path, dry_run: bool) -> list:
         "reports",
         "documentation",
     ]
+    target_resolved = target.resolve()
     for m in modules:
         docs_path = m.get("docs_path", f"docs/{m['name']}/")
+        # Validate path components before construction to catch traversal early
+        path_parts = Path(docs_path).parts
+        if docs_path.startswith("/") or any(part == ".." for part in path_parts):
+            print(f"  WARNING: Skipping unsafe docs_path {docs_path!r} — contains absolute path or '..'")
+            continue
+        try:
+            (target / docs_path).resolve().relative_to(target_resolved)
+        except ValueError:
+            print(f"  WARNING: Skipping unsafe docs_path {docs_path!r} — escapes target directory")
+            continue
         for sub in subdirs:
             dir_path = target / docs_path / sub
             if not dir_path.exists():

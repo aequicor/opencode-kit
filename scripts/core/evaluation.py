@@ -116,7 +116,7 @@ def load_suite(suite_file: Path) -> Optional[EvalSuite]:
     try:
         import yaml
 
-        with open(suite_file) as f:
+        with open(suite_file, encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         cases = []

@@ -294,11 +294,13 @@ def test_check_kit_version_match(capsys):
     assert "WARNING" not in captured.out
 
 
-def test_check_kit_version_mismatch_prints_warning(capsys):
+def test_check_kit_version_mismatch_exits(capsys):
     manifest = {"kit_version": "0.0.1"}
-    _check_kit_version(manifest)
+    with pytest.raises(SystemExit) as exc_info:
+        _check_kit_version(manifest)
+    assert exc_info.value.code == 1
     captured = capsys.readouterr()
-    assert "WARNING" in captured.out
+    assert "ERROR" in captured.out
 
 
 def test_check_kit_version_missing_no_warning(capsys):

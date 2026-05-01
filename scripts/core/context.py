@@ -1,4 +1,89 @@
 import datetime
+import sys
+from pathlib import Path
+
+
+def _detect_circular_deps(modules: list) -> list:
+    graph: dict[str, list[str]] = {}
+    for m in modules:
+        name = m.get("name", "")
+        deps_raw = m.get("module_dependencies", "") or ""
+        deps = [d.strip() for d in deps_raw.replace(",", " ").split() if d.strip()]
+        graph[name] = deps
+
+    seen_cycle_keys: set[frozenset] = set()
+    cycles: list[str] = []
+
+    def dfs(node: str, path: list[str], path_set: set[str]) -> None:
+        if node in path_set:
+            start = path.index(node)
+            cycle_nodes = path[start:]
+            cycle_key = frozenset(cycle_nodes)
+            if cycle_key not in seen_cycle_keys:
+                seen_cycle_keys.add(cycle_key)
+                cycles.append(" -> ".join(cycle_nodes + [node]))
+            return
+        if node not in graph:
+            return
+        path.append(node)
+        path_set.add(node)
+        for dep in graph.get(node, []):
+            dfs(dep, path, path_set)
+        path.pop()
+        path_set.discard(node)
+
+    for name in list(graph.keys()):
+        dfs(name, [], set())
+    return cycles
+
+
+def _validate_manifest(manifest: dict) -> None:
+    errors = []
+
+    for section in ("modules", "stack", "provider"):
+        if section not in manifest:
+            errors.append(f"  Top-level section '{section}' is missing")
+
+    modules = manifest.get("modules", [])
+    if not isinstance(modules, list):
+        errors.append("  'modules' must be a list")
+        modules = []
+
+    names_seen: set[str] = set()
+    for i, m in enumerate(modules):
+        if not isinstance(m, dict):
+            errors.append(f"  modules[{i}] must be a mapping, got {type(m).__name__}")
+            continue
+        prefix = f"modules[{i}]"
+        for field in ("name", "source_root", "test_root"):
+            if not m.get(field):
+                errors.append(f"  {prefix}.{field} is required but missing or empty")
+
+        name = m.get("name", "")
+        if name:
+            if name in names_seen:
+                errors.append(f"  {prefix}.name {name!r} is duplicated — module names must be unique")
+            names_seen.add(name)
+
+        for path_field in ("source_root", "test_root", "docs_path"):
+            val = m.get(path_field, "")
+            if val:
+                parts = Path(val).parts
+                if val.startswith("/") or ".." in parts:
+                    errors.append(
+                        f"  {prefix}.{path_field} {val!r} must be a relative path within the project (no '..' or absolute paths)"
+                    )
+
+    if not errors:
+        cycles = _detect_circular_deps(modules)
+        for cycle in cycles:
+            errors.append(f"  Circular module dependency detected: {cycle}")
+
+    if errors:
+        print("ERROR: Invalid manifest:")
+        for e in errors:
+            print(e)
+        sys.exit(1)
 
 
 def _build_module_table(modules: list) -> str:
@@ -218,6 +303,7 @@ def _build_nested_context(module: dict, stack: dict, project_name: str) -> dict:
 
 
 def build_context(manifest: dict) -> dict:
+    _validate_manifest(manifest)
     project = manifest.get("project", {})
     stack = manifest.get("stack", {})
     modules = manifest.get("modules", [])
@@ -267,7 +353,7 @@ def build_context(manifest: dict) -> dict:
         "REVIEWER_MODEL": reviewer_model,
         "DESIGNER_MODEL": designer_model,
         "SMALL_MODEL": models.get("small", coder_model),
-        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ISO_TIMESTAMP_PLACEHOLDER": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "CONTEXT7_ENABLED": str(context7_cfg.get("enabled", True)).lower(),
         "CONTEXT7_API_KEY_ENV": context7_cfg.get("api_key_env", "CONTEXT7_API_KEY"),
         "KNOWLEDGE_ENABLED": str(knowledge_cfg.get("enabled", True)).lower(),

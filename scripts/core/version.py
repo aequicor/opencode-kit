@@ -1,3 +1,5 @@
+import sys
+
 KIT_VERSION = "1.3.0"
 
 
@@ -7,7 +9,7 @@ def check_kit_version(manifest: dict) -> None:
         return
     if manifest_version != KIT_VERSION:
         print(
-            f"WARNING: manifest kit_version={manifest_version!r} but this script is {KIT_VERSION!r}."
+            f"ERROR: manifest kit_version={manifest_version!r} does not match this script version {KIT_VERSION!r}."
         )
-        print("  Some templates may have changed. Run with --merge to overwrite existing files.")
-        print()
+        print("  Update kit_version in your manifest, or remove it to skip the version check.")
+        sys.exit(1)

@@ -31,7 +31,7 @@ class AgentRun:
         self.agent_name = agent_name
         self.task_id = task_id
         self.model = model
-        self.start_time = datetime.datetime.utcnow()
+        self.start_time = datetime.datetime.now(datetime.timezone.utc)
         self.end_time: Optional[datetime.datetime] = None
         self.status = "running"
         self.tokens_used = 0
@@ -39,13 +39,13 @@ class AgentRun:
         self.error: Optional[str] = None
 
     def complete(self, tokens: int = 0, files: int = 0):
-        self.end_time = datetime.datetime.utcnow()
+        self.end_time = datetime.datetime.now(datetime.timezone.utc)
         self.status = "success"
         self.tokens_used = tokens
         self.files_changed = files
 
     def fail(self, error: str):
-        self.end_time = datetime.datetime.utcnow()
+        self.end_time = datetime.datetime.now(datetime.timezone.utc)
         self.status = "failed"
         self.error = error
 

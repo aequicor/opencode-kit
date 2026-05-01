@@ -29,7 +29,7 @@ def validate_manifest(manifest: dict, manifest_path: str = "") -> list[str]:
         return []
 
     try:
-        with open(schema_file) as f:
+        with open(schema_file, encoding="utf-8") as f:
             schema = json.load(f)
 
         validator_cls = jsonschema_mod.validators.validator_for(schema)

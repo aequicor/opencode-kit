@@ -19,7 +19,7 @@ class MetricsCollector:
             {
                 "type": event_type,
                 "agent": agent,
-                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "details": details,
             }
         )
@@ -91,7 +91,7 @@ class MetricsCollector:
         for log_file in sorted(self._dir.glob("events-*.json")):
             all_events.extend(json.loads(log_file.read_text(encoding="utf-8")))
 
-        cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=days)
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)
         recent = [
             e for e in all_events if datetime.datetime.fromisoformat(e["timestamp"]) >= cutoff
         ]
@@ -109,7 +109,7 @@ class MetricsCollector:
 
         lines = [
             f"# Metrics Report ({days} days)",
-            f"**Generated:** {datetime.datetime.utcnow().isoformat()}",
+            f"**Generated:** {datetime.datetime.now(datetime.timezone.utc).isoformat()}",
             f"**Total events:** {len(recent)}",
             "",
             "## Token Usage",

@@ -24,7 +24,7 @@ def verify_output(target: Path, context: dict) -> list:
     opencode_json = target / "opencode.json"
     if opencode_json.exists():
         try:
-            with open(opencode_json) as f:
+            with open(opencode_json, encoding="utf-8") as f:
                 json.load(f)
         except json.JSONDecodeError as e:
             warnings.append(f"INVALID JSON in opencode.json: {e}")
