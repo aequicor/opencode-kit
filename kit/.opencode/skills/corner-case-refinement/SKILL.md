@@ -1,236 +1,206 @@
 ---
 name: corner-case-refinement
-description: Systematic corner case discovery and refinement. Use during brainstorming and writing-plans to surface edge cases, boundary conditions, error states, and race conditions BEFORE implementation. Prevents rework by catching unknowns early.
+description: Systematic corner case discovery during business requirements phase. Runs BEFORE spec and design — surfaces domain invariants, boundary conditions, failure modes, and concurrency scenarios at the business planning level. Corner cases found during implementation are a planning failure.
 ---
 
 # Corner Case Refinement Skill
 
-Systematically discover, classify, and document corner cases before a single line of code is written. Integrates into the design → plan pipeline to eliminate late-cycle surprises.
+Business-level corner case analysis. Runs during the requirements phase — after clarifying questions with PO, before spec, design, or implementation plan. The goal is to surface every meaningful "what if" at the business domain level so the spec can address them proactively.
 
 ## When to Use
 
-Activate whenever any of these are true:
+**Primary trigger — REQUIRED before every FEATURE spec:**
+- Immediately after PO answers clarifying questions (Main step 0)
+- Before any spec, design document, or implementation plan is written
 
-- **Brainstorming phase** — after design sections are approved, before writing spec
-- **Writing-plans phase** — after file structure is mapped, before task decomposition
-- **Review phase** — before approving an implementation plan
-- **Debugging phase** — when a bug suggests systematic gaps in corner case analysis
-- **ANY feature** where inputs come from users, network, filesystem, or external APIs
+**Secondary triggers:**
+- Bug retrospective identifies systematic gaps in corner case analysis
+- A feature delivered with surprise edge cases (process failure — run retro)
 
-## Corner Case Categories
+**Do NOT activate:**
+- During implementation — corner case discovery during coding = planning failure
+- As a gate on already-written plans — by then it's too late; start over
 
-Use this taxonomy to systematically scan every aspect of the feature:
+## Business Corner Case Taxonomy
 
-### 1. Input Space Boundary Analysis
+These 6 categories are designed for the **business requirements** phase. Each question is framed at the domain level, not the code level.
 
-For every input field, parameter, or data source:
+### 1. Input Integrity Boundaries
 
-| Condition | Check |
-|-----------|-------|
-| **Null / None** | What if the value is missing entirely? |
-| **Empty** | Zero-length string, empty list, empty dict, zero? |
-| **Minimum** | Smallest valid value — what about one less? |
-| **Maximum** | Largest valid value — what about one more? |
-| **Unicode / encoding** | Emojis, RTL text, combining characters, null bytes |
-| **Type mismatch** | String where int expected, list where dict expected |
-| **Injection** | SQL, HTML/JS/XSS, shell metacharacters, format strings |
-| **Encoding drift** | Latin-1 in UTF-8 field, mixed line endings |
+For every piece of data entering the system, ask at the business level:
 
-### 2. State & Lifecycle
+| Business question | Why it matters |
+|-------------------|----------------|
+| What if the mandatory field is left blank by the user? | Form state, UX flow |
+| What if the value is technically in range but nonsensical (e.g. birth date in 2099)? | Data quality |
+| What if international characters break formatting assumptions? | Globalization |
+| What if the user pastes formatted text where plain text is expected? | Data sanitization |
+| What if two input fields contradict each other (e.g. startDate > endDate)? | Business rule enforcement |
 
-For every stateful entity:
+### 2. Business Process Integrity
 
-| Condition | Check |
-|-----------|-------|
-| **Initial** | What before any operation? Is default state valid? |
-| **Transition** | Every state → every reachable state? |
-| **Duplicate** | Same operation twice in a row? |
-| **Out-of-order** | Operation B before required operation A? |
-| **Interrupted** | What if process dies mid-operation? |
-| **Idempotency** | Repeated operation yields same result? |
+For every business operation, ask:
 
-### 3. Concurrency & Timing
+| Business question | Why it matters |
+|-------------------|----------------|
+| What if the user submits the same order twice by double-clicking? | Idempotency |
+| What if a required prerequisite step was skipped? | Process ordering |
+| What if the system crashes between step 2 and step 3 of a 5-step workflow? | Atomicity, recovery |
+| What if the user reverses a decision (cancel order, undo approval)? | Reversibility |
+| What if the same entity is modified by two users simultaneously? | Conflict resolution |
+| What if the entity is in the wrong state for this operation? | State machine enforcement |
 
-For shared resources and multi-user scenarios:
+### 3. Business Rule Violations & Domain Invariants
 
-| Condition | Check |
-|-----------|-------|
-| **Race** | Two operations on same entity simultaneously? |
-| **Deadlock** | Lock ordering — could A wait on B while B waits on A? |
-| **Starvation** | Could a low-priority operation wait forever? |
-| **Timeout** | What if downstream call takes 30s? 120s? Never responds? |
-| **Clock skew** | What if system clocks differ across nodes? |
-| **Partial failure** | Succeeded on node A, failed on node B? |
+For every business rule, ask:
 
-### 4. Error & Exception Paths
+| Business question | Why it matters |
+|-------------------|----------------|
+| What if the quantity goes negative? | Invariant enforcement |
+| What if the balance falls below zero after an operation? | Financial integrity |
+| What if a user tries to access another user's private data? | Authorization boundaries |
+| What if a parent entity is deleted while children still exist? | Referential integrity |
+| What if a unique constraint is violated (duplicate email, duplicate order ID)? | Identity enforcement |
+| What if circular references form (manager → manager, folder → parent)? | Data integrity |
+| What if a time-limited operation outlives its window? | Temporal constraints |
 
-For every external dependency:
+### 4. External Dependency Failure Modes
 
-| Condition | Check |
-|-----------|-------|
-| **Network** | DNS failure, connection refused, TLS error, reset? |
-| **Rate limit** | HTTP 429 at the worst possible moment? |
-| **Auth** | Token expired mid-request, credentials revoked? |
-| **Data corruption** | Truncated response, malformed JSON, wrong schema? |
-| **Disk** | Disk full, permission denied, file locked by another process? |
-| **Memory** | Out of memory during processing of large payload? |
-| **Dependency version** | Library upgraded — breaking change in minor version? |
+For every external system the feature depends on, ask:
 
-### 5. Scale & Load
+| Business question | Why it matters |
+|-------------------|----------------|
+| What if the payment gateway is down for 30 minutes? | Business continuity |
+| What if the external API returns an unexpected response format? | Defensive design |
+| What if the rate limit is hit at peak traffic? | Graceful degradation |
+| What if the external service responds but with wrong data? | Trust boundaries |
+| What if the auth token expires mid-batch operation? | Session continuity |
+| What if the third-party library has a breaking change? | Version lock strategy |
 
-For data-intensive operations:
+### 5. Scale & Capacity Boundaries
 
-| Condition | Check |
-|-----------|-------|
-| **Zero items** | List with zero elements — divide by zero? |
-| **One item** | Edge of batch logic — off-by-one in pagination? |
-| **Huge input** | 100k items, 1GB payload, 10k concurrent users? |
-| **Batching** | What if total items not evenly divisible by batch size? |
-| **Deeply nested** | Recursion limit, stack overflow, max depth exceeded? |
-| **Degrade gracefully** | Does it fail fast or degrade under load? |
+For every data flow, ask:
 
-### 6. Domain-Specific Invariants
+| Business question | Why it matters |
+|-------------------|----------------|
+| What is the business-expected max? The technical max? The pathological max? | Capacity planning |
+| What if the user uploads a 2 GB file where 10 MB was expected? | Resource limits |
+| What happens with zero results? One result? | Boundary UX |
+| What if the batch size doesn't evenly divide total items? | Off-by-one logic |
+| What if 10,000 concurrent users trigger this flow simultaneously? | Concurrency limit |
+| Does degradation preserve core business function? | Graceful failure |
 
-For business logic:
+### 6. Temporal & Concurrency Scenarios
 
-| Condition | Check |
-|-----------|-------|
-| **Negative** | Negative quantity, negative balance, negative time? |
-| **Future / Past** | Date in 2099? Date in 1900? |
-| **Identity** | Two entities with same unique key? |
-| **Circular** | Parent references itself (org chart, folder, comment)? |
-| **Cross-module** | Operation spans two modules — partial success? |
-| **Rollback** | What if step 3 of 5 fails? How do we undo steps 1-2? |
+For every shared resource or time-sensitive operation:
 
-## Systematic Discovery Process
+| Business question | Why it matters |
+|-------------------|----------------|
+| What if two cashiers process the last item in inventory simultaneously? | Inventory integrity |
+| What if a scheduled report runs while data is being updated? | Read consistency |
+| What if a user's clock is significantly wrong? | Time-based business logic |
+| What if the operation completes on the server but the confirmation never reaches the client? | Delivery guarantees |
+| What if an operation succeeds in one region but fails in another? | Distributed consistency |
 
-### Step 1: Input Mapping
+## Discovery Process (Business Phase)
 
-List every input entry point to the feature:
-- API parameters (path, query, body, headers)
-- User form fields
-- File reads
-- Database queries
-- Environment variables
-- Message queue payloads
-- External API responses
+### Step 1: Extract business invariants from PO answers
 
-For each input, run **boundary analysis** from category 1.
+From the PO's clarifying question answers, extract:
+- All "must always be true" statements
+- All "must never happen" statements
+- All numerical limits mentioned (timeouts, sizes, counts)
+- All state transitions described in the user story
 
-### Step 2: State Model Mapping
+### Step 2: Run the 6-category scan
 
-Identify every stateful entity:
-- Entities with lifecycle (created → active → suspended → deleted)
-- Workflow states (draft → review → approved → published)
-- Connection states (disconnected → connecting → connected → reconnecting)
-- Transaction states (pending → committed → rolled back)
+For each category above, list every applicable business question. Answer each one to the best of your knowledge. Flag questions you can't answer — ask PO.
 
-For each entity-state pair, run **state & lifecycle analysis** from category 2.
+### Step 3: Classify by severity (BUSINESS impact)
 
-### Step 3: Dependency Graph
+| Severity | Definition | Example |
+|----------|-----------|---------|
+| **Critical** | Data loss, financial loss, security breach, regulatory violation | Double-charging a customer's card |
+| **High** | User-visible incorrect result, broken business process | Order status stuck in "processing" forever |
+| **Medium** | Degraded experience, workaround exists | Search returns no results when one was expected |
+| **Low** | Cosmetic, edge of edge | Off-by-one pixel in a 1-in-10k scenario |
 
-Map every external call:
-- Database queries
-- HTTP/gRPC calls
-- Message queue publish/consume
-- Filesystem operations
-- Cache reads/writes
+**Calibration rule:** If a corner case wouldn't make a business stakeholder care, it's Low. If they'd call an emergency meeting, it's Critical.
 
-For each dependency, run **error & exception analysis** from category 4.
+### Step 4: Define expected business behavior
 
-### Step 4: Concurrency Scan
+For each corner case, write the **business decision** — not the technical implementation:
 
-Identify shared mutable state:
-- Database rows updated by multiple flows
-- In-memory caches
-- File writes from concurrent threads
-- Global counters or aggregations
+- "Return 400" → `BAD` (implementation, not business)
+- "Notify user that order cannot be placed because inventory is depleted; offer waitlist" → `GOOD` (business behavior)
 
-For each shared resource, run **concurrency analysis** from category 3.
+### Step 5: Produce the corner case register
 
-### Step 5: Scale Projection
-
-For each data collection point:
-- What is the expected size? The maximum size? The pathological size?
-- Does any algorithm have O(n²) or worse complexity?
-- Are there unbounded collections (no pagination, no limit)?
-
-Run **scale & load analysis** from category 5.
-
-### Step 6: Invariant Check
-
-List every business rule:
-- "Quantity must be positive"
-- "Users can only edit their own resources"
-- "Orders must have at least one line item"
-
-For each invariant, run **domain-specific analysis** from category 6.
+Save to `.vault/concepts/<module>/plans/<feature>-corner-cases.md`.
 
 ## Output Format
-
-Produce a structured corner case register:
 
 ```markdown
 ## Corner Case Register — [Feature Name]
 
-### Critical (would cause data loss, security breach, or system crash)
+> **Generated during business requirements phase.**
+> Critical and High items are mandatory inputs for spec and implementation plan.
 
-| # | Category | Condition | Expected Behavior | Test Coverage |
-|---|----------|-----------|-------------------|---------------|
-| 1 | Boundary | Empty request body → POST /orders | Return 400 with validation error | ❌ |
-| 2 | Concurrency | Two simultaneous updates to same order | Last-write-wins or optimistic lock error | ❌ |
+### Critical (data loss, financial loss, security, legal)
 
-### High (would cause incorrect behavior visible to user)
+| # | Category | Condition | Expected Business Behavior | Spec Addressed |
+|---|----------|-----------|---------------------------|----------------|
+| 1 | Business Integrity | Double-click submits duplicate order | Detect duplicate + confirm intent with user | ❌ |
+| 2 | External Dependency | Payment gateway timeout > 30s | Notify user of delay, hold order in "pending payment" state, automatic retry | ❌ |
 
-| # | Category | Condition | Expected Behavior | Test Coverage |
-|---|----------|-----------|-------------------|---------------|
-| 3 | Error | Payment gateway timeout after 30s | Retry with idempotency key, max 3 attempts | ❌ |
+### High (user-visible incorrect behavior)
 
-### Medium (edge cases unlikely but possible)
+| # | Category | Condition | Expected Business Behavior | Spec Addressed |
+|---|----------|-----------|---------------------------|----------------|
+| 3 | Invariants | Inventory goes to 0 between add-to-cart and checkout | Reserve inventory at add-to-cart; release on timeout | ❌ |
 
-| # | Category | Condition | Expected Behavior | Test Coverage |
-|---|----------|-----------|-------------------|---------------|
+### Medium (degraded experience, workaround exists)
 
-### Low (cosmetic or non-functional)
+| # | Category | Condition | Expected Business Behavior | Spec Addressed |
+|---|----------|-----------|---------------------------|----------------|
 
-| # | Category | Condition | Expected Behavior | Test Coverage |
-|---|----------|-----------|-------------------|---------------|
+### Low (cosmetic, extreme edge)
+
+| # | Category | Condition | Expected Business Behavior | Spec Addressed |
+|---|----------|-----------|---------------------------|----------------|
 ```
 
-## Integration with Writing Plans
+## Handoff to Spec & Plan
 
-After producing the corner case register, hand it off to `writing-plans`:
+The corner case register IS the handoff contract:
 
-1. **Every Critical item MUST become a test task in the plan** — do not proceed without test coverage for critical corner cases.
-2. **Every High item SHOULD become a test task** — PO can decide to defer, but the decision is explicit.
-3. **Medium and Low items** are noted in the plan for awareness but not mandatory.
+1. **Spec MUST reference every Critical and High item.** If a Critical corner case has no corresponding section in the spec, the spec is incomplete — reject.
+2. **Plan MUST include a test task for every Critical item.** No exceptions. High items get explicit decisions (test now or defer to backlog) — but decisions are documented.
+3. **Medium and Low** items are listed for awareness; PO may promote them.
 
-The corner case register is saved alongside the plan:
-- Plan: `.vault/concepts/<module>/plans/<feature>-plan.md`
-- Corner cases: `.vault/concepts/<module>/plans/<feature>-corner-cases.md`
+This is the only integration point. Writing-plans reads the register as input. Implementation never discovers corner cases — it only implements what was discovered in planning.
 
 ## Principles
 
-- **Discover before you build.** Every corner case found during implementation is a failure of planning.
-- **Zero surprises.** If you cannot say "we knew about that case and decided to handle it this way," the analysis was incomplete.
-- **Explicit over implicit.** "Handle edge cases" is not a plan. Name every edge case.
-- **Severity-driven priority.** Not all corner cases are equal — focus on data loss, security, and user-visible errors first.
-- **Test coverage is proof.** A corner case without a test is a wish, not evidence.
-- **No false precision.** Don't fabricate corner cases for completeness. Only list cases that can actually occur given the system architecture.
-- **YAGNI for corners.** Don't handle scale-5 corners on a scale-1 system. But DO document why they're excluded.
+- **Business phase, not spec phase.** This runs BEFORE the spec exists. Corner cases feed INTO the spec.
+- **Domain language, not code.** "Reserve inventory atomically" → `BAD`. "Prevent oversell when multiple customers check out simultaneously" → `GOOD`.
+- **Decisions, not details.** Expected business behavior is what the business decides, not how the code implements it.
+- **Severity = stakeholder impact.** Not technical difficulty. Not implementation complexity.
+- **No spec without corners.** A spec written without a corner case register is speculation written without due diligence.
+- **YAGNI for corners.** Don't plan for scale-5 problems on a scale-1 system. But DO document the assumed scale.
 
 ## Red Flags
 
-- **"This is simple, no corner cases"** — Simple features have the most hidden assumptions. At minimum run input boundary analysis.
-- **Skipping the register** — Undocumented corner cases are invisible corner cases. They will bite you.
-- **All corner cases are Medium or Low** — If nothing is Critical or High, you haven't looked hard enough.
-- **No test tasks for Critical items** — The plan is incomplete. Stop and add them.
+- **Corner case register produced after spec is written** — Process failure. Spec was written blind.
+- **"This feature has no corner cases"** — Every feature that accepts input has corner cases. Minimum: run input boundaries.
+- **All items Medium or Low** — Calibration failure. At least one Critical or High exists for any non-trivial feature.
+- **Technical implementation in Expected Behavior column** — Domain language only. Implementation decisions live in the plan, not the register.
+- **Register not referenced by spec** — The register is the spec's source of truth for edge conditions. If the spec doesn't cite it, the analysis was wasted.
 
-## Self-Review
+## Self-Review (before handing to spec)
 
-After producing the register, verify:
-
-1. **Coverage:** Did you run all 6 categories? If a category doesn't apply, write why.
-2. **Severity calibration:** Are Critical items truly critical (data loss, security, crash)? Are High items truly user-visible incorrectness?
-3. **Testability:** Can each corner case be turned into a concrete test? If not, rephrase until it can.
-4. **No vagueness:** "Handle edge cases" → reject. "Return 409 Conflict when duplicate order ID submitted" → accept.
+1. **Language check:** Are all Expected Behaviors in business/domain terms? No `return 400`, no `throw exception`, no `use mutex`?
+2. **Severity calibration:** If a stakeholder wouldn't call a meeting about it, is it really Critical?
+3. **Coverage:** Did you skip a category? If yes, write why in a note at the bottom.
+4. **Answerability:** Could you answer every question? Flag unanswered ones for PO.
+5. **No vagueness:** "Handle edge cases" → reject. "When payment fails, hold order for 24 hours, notify user via email, auto-cancel if not resolved" → accept.

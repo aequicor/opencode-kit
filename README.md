@@ -104,6 +104,44 @@ Do not skip steps. Do not guess values.
 | PromptEngineer | Maintains agent prompts and skills | Reviewer | Subagent | @Main for prompt work |
 | AutoApprover | Automated plan gatekeeper — verifies plan completeness and spec alignment | Reviewer | Subagent | @Main in AUTO_APPROVE mode |
 
+## Corner Case Analysis System
+
+Every feature starts with a systematic corner case analysis during the **business requirements phase** — before a single line of spec or code is written. The system prevents late-cycle surprises by surfacing domain invariants, boundary conditions, failure modes, and concurrency scenarios at the business planning level.
+
+### How it works
+
+```
+PO task → clarifying questions (incl. corner case exploration) →
+  corner-case-refinement → corner case register →
+    brainstorming / spec (MUST address Critical + High) →
+      writing-plans (Critical = mandatory test task) →
+        implementation (no corner case discovery here)
+```
+
+**6 analysis categories**, each framed at the business domain level:
+
+| Category | Focus | Example question |
+|----------|-------|-----------------|
+| Input Integrity | Data entering the system | What if the mandatory field is left blank? |
+| Business Process Integrity | Workflow ordering, idempotency, recovery | What if the system crashes mid-workflow? |
+| Domain Invariants | Business rules that must never be violated | What if quantity goes negative? |
+| External Dependency Failures | Third-party systems, payment gateways | What if the payment gateway is down for 30 minutes? |
+| Scale & Capacity | Data volume, concurrency limits | What if 10,000 concurrent users trigger this flow? |
+| Temporal & Concurrency | Race conditions, distributed consistency | What if two cashiers process the last item simultaneously? |
+
+**Severity classification** at the business level:
+
+| Severity | Definition | Enforcement |
+|----------|-----------|-------------|
+| **Critical** | Data loss, financial loss, security breach, regulatory violation | **Mandatory test task** in implementation plan |
+| **High** | User-visible incorrect result, broken business process | **Explicit decision** required (test or defer) |
+| Medium | Degraded experience, workaround exists | Listed for awareness |
+| Low | Cosmetic, extreme edge | Documented for completeness |
+
+**Output:** Corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`.
+
+**Hard rule:** Every Critical corner case MUST have a corresponding test task in the implementation plan. Specs written without a corner case register are rejected as incomplete. Corner cases discovered during implementation are a **planning failure** — the system catches this at the design level, not the code level.
+
 ## Profiles
 
 | Profile | Stack | Pre-filled |
@@ -147,14 +185,15 @@ For CI/CD, inject as secrets. Never commit `.env` files — add to `.gitignore`.
 
 ```
 PO → /new-feature <description>
-      └─► @Main (CLASSIFY → CLARIFY → SEARCH → PLAN → QA DRAFT → CONFIRM → EXECUTE → QA FINAL → CLOSE)
-               ├─► @Designer     (UI features)
-               ├─► @CodeWriter   (implementation, one stage at a time)
-               ├─► @CodeReviewer (after each stage)
-               ├─► @BugFixer     (for bugs)
-               ├─► @debugger     (complex bugs without stacktrace)
-               ├─► @QA           (test plan draft + final)
-               └─► @AutoApprover (at CONFIRM step when AUTO_APPROVE=true)
+      └─► @Main (CLASSIFY → CLARIFY incl. corner cases → SEARCH → CORNER CASE ANALYSIS → DESIGN → SPEC → PLAN → QA DRAFT → CONFIRM → EXECUTE → QA FINAL → CLOSE)
+                ├─► corner-case-refinement (business-phase analysis BEFORE spec)
+                ├─► @Designer     (UI features)
+                ├─► @CodeWriter   (implementation, one stage at a time)
+                ├─► @CodeReviewer (after each stage)
+                ├─► @BugFixer     (for bugs)
+                ├─► @debugger     (complex bugs without stacktrace)
+                ├─► @QA           (test plan draft + final)
+                └─► @AutoApprover (at CONFIRM step when AUTO_APPROVE=true)
 
               At CONFIRM step, two modes:
               • Manual   — @Main pauses, PO reviews and types /approve to continue

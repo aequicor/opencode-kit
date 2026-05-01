@@ -143,9 +143,11 @@ This reduces errors in multi-step tasks. For trivial actions (read known file, g
 
 ```
 PO ─► @Main (single entry point)
-        │   superpowers:brainstorming              → spec in .vault/reference/[module]/spec/
+        │   superpowers:brainstorming              → business requirements
         │   corner-case-refinement                 → .vault/concepts/[module]/plans/<feature>-corner-cases.md
-        │   superpowers:writing-plans              → plan in .vault/concepts/[module]/plans/
+        │                                             (business-level analysis BEFORE spec is written)
+        │   superpowers:writing-plans              → spec + plan in .vault/concepts/[module]/plans/
+        │                                             (spec MUST address Critical and High corner cases)
         │   superpowers:executing-plans            → stage-by-stage implementation
         │   superpowers:subagent-driven-development → dispatch executors
         │   checkpoint → .planning/CURRENT.md after each step
@@ -161,11 +163,11 @@ PO ─► @Main (single entry point)
 ```
 
 **Pipeline order:**
-1. `brainstorming` produces approved spec
-2. `corner-case-refinement` scans spec for edge cases → produces corner case register
-3. Critical/High corner cases feed into `writing-plans` as mandatory test tasks
-4. `writing-plans` produces implementation plan with corner case coverage
-5. `executing-plans` or `subagent-driven-development` implements plan
+1. `clarifying questions` (Step 0) — PO answers including corner case exploration
+2. `corner-case-refinement` — business-level analysis of domain invariants, boundary conditions, failure modes
+3. `brainstorming` / `spec` — writes spec that MUST address Critical and High corner cases from the register
+4. `writing-plans` — writes implementation plan with mandatory test tasks for Critical corner cases
+5. `executing-plans` or `subagent-driven-development` — implements plan; no corner case discovery happens here
 
 **Single entry point — `@Main`.** Do not invoke other agents directly without @Main orchestration.
 
@@ -202,7 +204,7 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 ## MCP and Skills
 
 **Built-in skills:**
-- `corner-case-refinement` — systematic corner case discovery. Run during brainstorming (after design approval) and writing-plans (before task decomposition). Produces corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`.
+- `corner-case-refinement` — business-level corner case analysis. Runs BEFORE spec is written, during business requirements phase. Scans 6 categories: input integrity, process integrity, domain invariants, external dependency failures, scale/capacity, temporal/concurrency. Produces corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`. Critical items become mandatory test tasks.
 - `code-review-checklist` — pre-commit systematic review checklist.
 - `bug-retro` — post-bug root cause analysis and prevention.
 - `knowledge-graph` — semantic document indexing and cross-reference.
