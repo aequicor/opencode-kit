@@ -70,7 +70,6 @@ except ImportError:
 from core import (
     build_context,
     check_credentials,
-    check_kit_version,
     check_unresolved,
     create_docs_scaffold,
     kit_path_to_target,
@@ -78,6 +77,7 @@ from core import (
     render,
     verify_output,
 )
+from core.version import KIT_VERSION
 from core.context import _build_nested_context
 
 KIT_REPO = "aequicor/opencode-kit"
@@ -194,7 +194,16 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
         manifest = yaml.safe_load(f)
 
     check_credentials(manifest)
-    check_kit_version(manifest)
+
+    # Note: apply_remote.py is used for upgrades, so manifest.kit_version is
+    # intentionally older than KIT_VERSION. We print an informational line
+    # instead of a fatal error (unlike apply.py which checks strict equality).
+    manifest_version = manifest.get("kit_version", "unknown")
+    if manifest_version == KIT_VERSION:
+        print(f"  Kit version: {KIT_VERSION} (already up to date — re-applying templates)")
+    else:
+        print(f"  Upgrading: {manifest_version} → {KIT_VERSION}")
+
     context = build_context(manifest)
 
     editors = manifest.get("editors", ["opencode"])
@@ -262,11 +271,11 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
                 )
                 continue
             if target_nested.exists() and not merge:
-                print(f"  SKIP (exists) {target_nested.relative_to(target_resolved)}")
+                print(f"  SKIP (exists) {target_nested.resolve().relative_to(target_resolved)}")
                 continue
             nested_actions.append((target_nested, nested_ctx))
             print(
-                f"  NESTED AGENTS.md        \u2192 {target_nested.relative_to(target_resolved) if target.exists() else target_nested}"
+                f"  NESTED AGENTS.md        \u2192 {target_nested.resolve().relative_to(target_resolved) if target.exists() else target_nested}"
             )
 
     scaffold_dirs = create_docs_scaffold(modules, target, dry_run=True)
