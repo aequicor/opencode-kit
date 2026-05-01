@@ -141,6 +141,7 @@ def test_full_apply_all_files_present(tmp_path):
         "QA.md",
         "Designer.md",
         "PromptEngineer.md",
+        "AutoApprover.md",
     ]
     for agent in expected_agents:
         assert (agents_dir / agent).exists(), f"Missing: {agent}"

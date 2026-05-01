@@ -17,7 +17,7 @@ Type: FEATURE (or clarify if this is BUG/TECH)
 2. SEARCH — search KnowledgeOS on the topic.
 3. PLAN — create requirements, spec, plan + stages via superpowers:writing-plans.
 4. QA DRAFT — create test-plan.
-5. CONFIRM — show summary to PO, wait for approve.
+5. CONFIRM — show summary to PO, wait for /approve (or @AutoApprover if AUTO_APPROVE=true).
 6. EXECUTE — implement via @CodeWriter → @CodeReviewer cycles.
 7. QA FINAL — finalize test-plan.
 8. CLOSE — documentation and checkpoint.

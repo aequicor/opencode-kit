@@ -135,12 +135,13 @@ PO ─► @Main (single entry point)
         │   superpowers:subagent-driven-development → dispatch executors
         │   checkpoint → .planning/CURRENT.md after each step
         │
-        ├─► @CodeWriter   (code + tests + build)
-        ├─► @CodeReviewer (pull-request style review)
-        ├─► @BugFixer     (defect analysis + fix + report)
-        ├─► @debugger     (reproduction + root cause, read-only)
-        ├─► @Designer     (UI/UX design)
-        ├─► @QA           (draft/final test plan)
+        ├─► @CodeWriter    (code + tests + build)
+        ├─► @CodeReviewer  (pull-request style review)
+        ├─► @BugFixer      (defect analysis + fix + report)
+        ├─► @debugger      (reproduction + root cause, read-only)
+        ├─► @Designer      (UI/UX design)
+        ├─► @QA            (draft/final test plan)
+        ├─► @AutoApprover  (automated plan gatekeeper — at CONFIRM step when AUTO_APPROVE=true)
         └─► @PromptEngineer (agent prompt maintenance)
 ```
 
@@ -231,11 +232,15 @@ Critical operations require explicit PO approval before execution. @Main enforce
 | EXTERNAL_API | New outbound 3rd-party API call | PO must approve | Adding new external HTTP calls |
 | COST_BREACH | Single operation > $5 estimated cost | PO must approve | Expensive model calls |
 
-**Approval flow:**
+**Approval flow — PLAN_CONFIRM gate:**
+- **Manual mode (default):** @Main pauses and presents summary to PO. PO types `/approve` to continue or `denied` to abort.
+- **AUTO_APPROVE=true mode:** @Main dispatches `@AutoApprover` which reviews plan/spec alignment and returns `APPROVED` or `NEEDS_CHANGES`. If approved — proceed. If not — @Main resolves BLOCKERs directly (plan files are @Main's domain) and retries, max 2 cycles, then escalates to PO.
+
+**Approval flow — all other gates (DEPLOY, DESTROY, SECRET_ROTATE, MIGRATION, EXTERNAL_API, COST_BREACH):**
 1. @Main detects gate condition.
 2. @Main writes `BLOCKED: <gate> — awaiting PO approval` to CURRENT.md.
 3. @Main presents the operation description, risk assessment, and impact scope to PO.
-4. PO replies `approved` or `denied`.
+4. PO types `/approve` to proceed or `denied` to abort. AUTO_APPROVE mode does **not** bypass these gates — only PLAN_CONFIRM is automated.
 5. @Main resumes from CURRENT.md `NEXT` line.
 
 **NO agent may bypass gates.** If a subagent triggers a gate condition — it must escalate, not proceed.

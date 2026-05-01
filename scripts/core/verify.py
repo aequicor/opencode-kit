@@ -15,7 +15,9 @@ def verify_output(target: Path, context: dict) -> list:
         "BugFixer.md",
         "debugger.md",
         "QA.md",
+        "Designer.md",
         "PromptEngineer.md",
+        "AutoApprover.md",
     ]
     for agent in expected_agents:
         if not (agents_dir / agent).exists():
