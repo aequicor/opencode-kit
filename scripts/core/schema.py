@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-_SCHEMA_PATH = Path(__file__).parent.parent / "kit" / "manifest.schema.json"
+_SCHEMA_PATH = Path(__file__).parent.parent.parent / "kit" / "manifest.schema.json"
 
 
 def _load_schema():

@@ -60,5 +60,4 @@ python_functions = ["test_*"]
 addopts = ["-v", "--tb=short", "--strict-markers"]
 
 [tool.setuptools]
-packages = ["scripts.core"]
-package-dir = { "scripts.core" = "scripts/core" }
+packages = ["scripts", "scripts.core"]

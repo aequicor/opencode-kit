@@ -1,7 +1,5 @@
 import datetime
 
-KIT_VERSION = "1.3.0"
-
 
 def _build_module_table(modules: list) -> str:
     header = "| Module | Gradle module | Docs | Responsibility |\n"

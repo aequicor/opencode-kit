@@ -1,0 +1,104 @@
+# Machine-readable changelog for opencode-kit.
+# The /update command and AI Update Prompt read this to determine
+# the migration path from the user's current version to latest.
+# Latest version is the FIRST entry.
+
+versions:
+  - version: "1.3.0"
+    date: "2026-04-30"
+    breaking: false
+    description: >
+      Core module extraction, JSON Schema validation, telemetry,
+      pre-commit hooks, pyproject.toml packaging.
+    manifest_changes:
+      added_fields:
+        - path: "provider.agents"
+          description: "Per-agent provider overrides (optional, Phase 3)"
+          default: null
+    files_changed:
+      - opencode.json
+      - .opencode/_shared.md
+      - .opencode/agents/*
+      - .opencode/commands/*
+      - .opencode/evals/*
+      - .opencode/skills/*
+    migration_steps:
+      - action: rerun_apply
+        description: >
+          curl -sL https://raw.githubusercontent.com/aequicor/opencode-kit/main/scripts/apply_remote.py -o apply_remote.py
+          python3 apply_remote.py --manifest <manifest>.yaml --target . --merge
+          rm apply_remote.py
+      - action: validate_manifest
+        description: >
+          python3 -c "from scripts.core.schema import validate_manifest; validate_manifest('manifest.yaml')"
+    new_capabilities:
+      - "HITL gates for destructive operations"
+      - "Schema validation for manifests"
+      - "Telemetry tracking"
+      - "4 new profiles: rust-actix, go-gin, java-spring, csharp-aspnet"
+
+  - version: "1.2.0"
+    date: "2026-04-28"
+    breaking: false
+    description: >
+      Zero-clone AI Setup Prompt, apply_remote.py, new profiles.
+    manifest_changes: {}
+    files_changed:
+      - scripts/apply_remote.py (NEW)
+      - profiles/ollama-cloud.yaml (NEW)
+      - profiles/minecraft-paper-plugin.yaml (NEW)
+    migration_steps:
+      - action: rerun_apply
+        description: >
+          curl -sL https://raw.githubusercontent.com/aequicor/opencode-kit/main/scripts/apply_remote.py -o apply_remote.py
+          python3 apply_remote.py --manifest <manifest>.yaml --target . --merge
+          rm apply_remote.py
+    new_capabilities:
+      - "Zero-clone kit application via AI Setup Prompt"
+      - "apply_remote.py — self-contained remote applier"
+
+  - version: "1.1.0"
+    date: "2026-04-25"
+    breaking: true
+    description: >
+      BREAKING: tools → permission migration for OpenCode v1.1.1+ syntax
+      (agent templates changed — re-apply with --merge to regenerate).
+      Added external_directory, doom_loop, small_model, compaction, formatter.
+    manifest_changes:
+      added_fields:
+        - path: "formatter"
+          description: "Auto-code formatting configuration block"
+          default: null
+    template_changes:
+      - description: "tools → permission in all agent .md files"
+        affected: ".opencode/agents/* (all 8 agent files)"
+      - description: "Added compaction, doom_loop, external_directory references"
+        affected: ".opencode/_shared.md"
+    files_changed:
+      - .opencode/agents/*
+      - .opencode/_shared.md
+    migration_steps:
+      - action: rerun_apply
+        description: >
+          curl -sL https://raw.githubusercontent.com/aequicor/opencode-kit/main/scripts/apply_remote.py -o apply_remote.py
+          python3 apply_remote.py --manifest <manifest>.yaml --target . --merge
+          rm apply_remote.py
+    new_capabilities:
+      - "OpenCode v1.1.1+ permission syntax"
+      - "external_directory permission"
+      - "doom_loop native detection"
+      - "small_model support"
+      - "compaction configuration"
+      - "formatter configuration"
+
+  - version: "1.0.0"
+    date: "2026-04-20"
+    breaking: false
+    description: "Initial release — 8 specialized AI agents, 3 slash commands."
+    manifest_changes: {}
+    files_changed: []
+    migration_steps: []
+    new_capabilities:
+      - "8 specialized AI agents"
+      - "Main orchestrator with FEATURE/BUG/TECH pipelines"
+      - "3 slash commands: /new-feature, /resume, /checkpoint"

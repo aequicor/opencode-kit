@@ -564,7 +564,7 @@ class TestApplyRemote:
 
     def test_apply_remote_kit_path_to_target(self):
         import apply_remote
-        result = apply_remote._kit_path_to_target("kit/opencode.json.template")
+        result = apply_remote.kit_path_to_target("kit/opencode.json.template")
         assert result == "opencode.json"
 
     def test_apply_remote_filter_by_editors(self):
