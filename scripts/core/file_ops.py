@@ -87,19 +87,19 @@ def print_postinstall_checklist(context: dict) -> None:
     print("\n" + "\u2500" * 60)
     print("POST-INSTALL CHECKLIST")
     print("\u2500" * 60)
-    print(f"\n1. Set environment variables before running opencode:")
+    print("\n1. Set environment variables before running opencode:")
     print(f"   export {context['PROVIDER_API_KEY_ENV']}=<your_api_key>")
     if context.get("CONTEXT7_ENABLED") == "true":
         print(f"   export {context['CONTEXT7_API_KEY_ENV']}=<your_context7_key>")
     print(
-        f"\n2. Verify opencode.json \u2014 apiKey must use {{env:VAR}} syntax, NOT a real key"
+        "\n2. Verify opencode.json \u2014 apiKey must use {{env:VAR}} syntax, NOT a real key"
     )
     print(
-        f"\n3. Check .opencode/_shared.md \u2192 Project Context section matches your project"
+        "\n3. Check .opencode/_shared.md \u2192 Project Context section matches your project"
     )
-    print(f"\n4. Run compile to verify build works:")
+    print("\n4. Run compile to verify build works:")
     print(f"   {context['COMPILE_COMMAND']}")
-    print(f"\n5. Add .env to .gitignore if not already there")
+    print("\n5. Add .env to .gitignore if not already there")
     if context.get("KNOWLEDGE_ENABLED") == "true":
         print(
             f"\n6. Start KnowledgeOS at {context['KNOWLEDGE_URL']} before running opencode"

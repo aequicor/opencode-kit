@@ -2,7 +2,6 @@
 Agent evaluation framework — benchmark prompts against defined tasks.
 """
 
-import json
 import time
 from pathlib import Path
 from typing import Optional

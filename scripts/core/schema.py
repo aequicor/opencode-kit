@@ -3,9 +3,7 @@ JSON Schema validation for opencode-kit manifests.
 """
 
 import json
-import sys
 from pathlib import Path
-from typing import Optional
 
 _SCHEMA_PATH = Path(__file__).parent.parent.parent / "kit" / "manifest.schema.json"
 

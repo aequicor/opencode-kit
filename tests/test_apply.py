@@ -3,9 +3,7 @@ Unit tests for opencode-kit core and apply scripts.
 Run: python -m pytest tests/ -v
 """
 
-import json
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -590,7 +588,7 @@ class TestApplyRemote:
         assert apply_remote.KIT_REPO == "aequicor/opencode-kit"
         assert apply_remote.KIT_BRANCH == "main"
 
-def test_apply_remote_cli_exists(self):
+def test_apply_remote_cli_exists():
     import apply_remote
     assert hasattr(apply_remote, 'main')
 
@@ -680,7 +678,7 @@ def test_cost_tracker_remaining():
 
 
 def test_default_pricing():
-    from core.costs import DEFAULT_PRICING, ModelPricing
+    from core.costs import DEFAULT_PRICING
     assert "moonshotai/kimi-k2.6" in DEFAULT_PRICING
     pricing = DEFAULT_PRICING["moonshotai/kimi-k2.6"]
     cost = pricing.estimate_cost(1000, 500)

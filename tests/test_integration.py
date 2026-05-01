@@ -3,12 +3,10 @@ Integration tests — full apply cycle with real manifests.
 Run: python -m pytest tests/test_integration.py -v
 """
 
-import json
 import re
 import sys
 from pathlib import Path
 
-import pytest
 import yaml
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))

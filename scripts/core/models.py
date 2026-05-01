@@ -89,7 +89,7 @@ class CodeReviewOutput:
         self.clarification = clarification
 
     def to_markdown(self) -> str:
-        lines = [f"# Code Review: {self.feature}", "", f"## Summary", self.summary]
+        lines = [f"# Code Review: {self.feature}", "", "## Summary", self.summary]
         if self.clarification:
             lines.append(f"\n\u26a0\ufe0f Needs clarification: {self.clarification}")
 
@@ -188,8 +188,8 @@ class BugFixReport:
             f"# Bug Fix Report: {self.bug_name}",
             "",
             f"**Date:** {date}",
-            f"**Author:** BugFixer Agent",
-            f"**Status:** Fixed",
+            "**Author:** BugFixer Agent",
+            "**Status:** Fixed",
             f"**Module:** {self.module}",
             f"**Priority:** {self.priority}",
             "",

@@ -3,7 +3,6 @@ Plugin system for opencode-kit.
 Allows loading custom agent configurations from external sources.
 """
 
-import sys
 from pathlib import Path
 from typing import Optional
 

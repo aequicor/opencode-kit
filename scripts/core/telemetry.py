@@ -5,7 +5,6 @@ Tracks timing, cost estimation, and success rates.
 
 import datetime
 import json
-import sys
 from pathlib import Path
 from typing import Optional
 

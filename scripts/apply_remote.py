@@ -27,7 +27,6 @@ except ImportError:
     sys.exit(1)
 
 from core import (
-    KIT_VERSION,
     build_context,
     check_credentials,
     check_kit_version,
@@ -151,7 +150,7 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
 
     editors = manifest.get("editors", ["opencode"])
 
-    print(f"\nFetching kit file list from GitHub...")
+    print("\nFetching kit file list from GitHub...")
     kit_files = _fetch_kit_file_list(editors)
     print(f"Found {len(kit_files)} kit files.")
 

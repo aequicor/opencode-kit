@@ -10,13 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-try:
-    import yaml
-except ImportError:
-    print("ERROR: PyYAML is required. Install with: pip install pyyaml")
-    sys.exit(1)
-
-from scripts.core.evaluation import EvalCase, EvalResult, EvalSuite, load_suite
+from scripts.core.evaluation import load_suite
 
 
 def run_evals(suites_dir: Path, output_dir: Path):

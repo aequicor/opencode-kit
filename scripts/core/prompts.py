@@ -4,7 +4,6 @@ Prompt versioning — tracks prompt changes with version tags and changelog.
 
 import datetime
 from pathlib import Path
-from typing import Optional
 
 PROMPT_REGISTRY = {
     "agents": ".opencode/agents/",
