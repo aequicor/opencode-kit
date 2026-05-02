@@ -121,10 +121,14 @@ After receiving answers from PO:
     Else:
       → No pre-made package. Proceed from step 1.
 
-1. REQUIREMENTS PHASE — dispatch @RequirementsPipeline via task:
-              Feature: [snake_case feature name derived from PO description]
-              Module: [module from Step 0]
-              Description: [PO's description from Step 0]
+1. REQUIREMENTS PHASE — check if `.opencode/agents/RequirementsPipeline.md` exists.
+
+   ### Mode A — requirements pipeline available (file exists):
+
+              Dispatch @RequirementsPipeline via task:
+                Feature: [snake_case feature name derived from PO description]
+                Module: [module from Step 0]
+                Description: [PO's description from Step 0]
 
               @RequirementsPipeline runs autonomously:
               BA draft → CCR BUSINESS loop → RequirementsQA → CoverageChecker →
@@ -138,6 +142,16 @@ After receiving answers from PO:
                 test plan:         .vault/reference/[module]/spec/[feature]-requirements-test-plan.md
                 spec:              .vault/reference/[module]/spec/[feature].md
 
+   ### Mode B — no requirements pipeline (file absent):
+
+              Proceed with legacy inline requirements mode:
+              a. Call skill `corner-case-refinement`. Produce:
+                 .vault/concepts/[module]/plans/[feature]-corner-cases.md
+              b. Call superpowers:writing-plans to write STRICTLY SEQUENTIALLY:
+                 - .vault/concepts/[module]/requirements/[feature].md → compress() → checkpoint
+                 - .vault/reference/[module]/spec/[feature].md → compress() → checkpoint
+              c. After each file: knowledge-my-app_write_guideline(file)
+
 2. SEARCH  — knowledge-my-app_search_docs on the feature topic in .vault/
               Read every found file in full (existing code patterns, related guidelines).
 
@@ -147,7 +161,8 @@ After receiving answers from PO:
 
 5. PLAN    — call superpowers:writing-plans.
               Input: requirements + corner case register + spec from step 1/0.5.
-              requirements.md and spec.md are NOT written here — they come from @RequirementsPipeline.
+              In Mode A / pre-made package: requirements.md and spec.md already exist — do NOT rewrite them.
+              In Mode B: requirements.md and spec.md were written in step 1b — do NOT rewrite them.
               Create files STRICTLY SEQUENTIALLY (one file per turn):
               a. write .vault/concepts/[module]/plans/[feature]-plan.md → compress() → checkpoint
               b. For EACH stage file — separate turn:

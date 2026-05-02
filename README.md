@@ -1,8 +1,8 @@
 # opencode-kit
 
-Reusable OpenCode AI agent configuration. Clone this kit or use the zero-clone AI Setup Prompt — either way, your project gets a full orchestrated AI development workflow with 9 core agents and an optional 7-agent AI-driven requirements pipeline.
+Reusable OpenCode AI agent configuration. Clone this kit or use the zero-clone AI Setup Prompt — either way, your project gets a full orchestrated AI development workflow.
 
-**Migrated to OpenCode v1.1.1+ syntax** — uses `permission` (not deprecated `tools`), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
+**Requires OpenCode v1.1.1+** — uses `permission` (not deprecated `tools`), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
 
 ## What you get
 
@@ -13,8 +13,8 @@ Reusable OpenCode AI agent configuration. Clone this kit or use the zero-clone A
 - **Anti-loop guardrails**: circuit breakers, context discipline, token budget management, native `doom_loop` detection
 - **Compaction & token budget**: auto-compaction with reserved buffer, 3-tier token budget (50%/75%/90%)
 - **Session continuity**: checkpoint pattern via `.planning/CURRENT.md`
-- **Documentation hierarchy**: per-module `requirements/spec/plans/reports` structure
-- **7 slash commands**: `/new-feature`, `/requirements-pipeline`, `/resume`, `/checkpoint`, `/update`, `/approve`, `/review`
+- **Documentation hierarchy**: per-module `requirements/spec/plans/reports` structure in `.vault/`
+- **11 slash commands**: `/new-feature`, `/requirements-pipeline`, `/approve`, `/resume`, `/checkpoint`, `/review`, `/update`, `/update-deps`, `/deploy`, `/fix`, `/lint`
 - **Human-in-the-loop or full automation**: `/approve` for manual confirmation; `AUTO_APPROVE=true` for zero-touch pipelines via `@AutoApprover`
 - **Security perimeter**: `external_directory` permission, granular bash rules, destructive command denials
 
@@ -26,7 +26,7 @@ Reusable OpenCode AI agent configuration. Clone this kit or use the zero-clone A
 
 ```bash
 # 1. Clone the kit
-git clone <this-repo> opencode-kit
+git clone https://github.com/aequicor/opencode-kit.git
 cd opencode-kit
 
 # 2. Copy and fill the manifest
@@ -90,7 +90,6 @@ Read that file completely, then follow every phase in it exactly.
 Do not skip steps. Do not guess values.
 ```
 
-
 ## Agent Roster
 
 ### Core agents (all profiles)
@@ -123,24 +122,27 @@ Do not skip steps. Do not guess values.
 
 Every feature starts with a systematic corner case analysis during the **business requirements phase** — before a single line of spec or code is written. The system prevents late-cycle surprises by surfacing domain invariants, boundary conditions, failure modes, and concurrency scenarios at the business planning level.
 
-### How it works (full pipeline)
+### How it works (full pipeline — `requirements-pipeline` profile)
 
 ```
 PO: /requirements-pipeline "description"   (or automatically as @Main step 1)
   @BusinessAnalyst    — drafts requirements
-  @CornerCaseReviewer — attacks requirements across 6 categories (loop, max 3)
-  @BusinessAnalyst    — updates requirements with answers
-  corner-case-refinement skill — formalizes findings into register
-  @RequirementsQA     — generates test cases (pre-spec)
-  @CoverageChecker    — verifies all requirements have test cases (loop, max 2)
-  @SystemAnalyst      — generates technical spec
-  @CornerCaseReviewer — attacks spec across 4 technical axes (loop, max 3)
-  @ConsistencyChecker — final consistency gate (loop, max 2)
+        ↕ loop (max 3 iterations)
+  @CornerCaseReviewer — attacks requirements across 6 categories, @BusinessAnalyst answers
+  corner-case-refinement skill — formalizes findings into corner case register
+  @RequirementsQA     — generates test cases from requirements + register (pre-spec)
+        ↕ loop (max 2 iterations)
+  @CoverageChecker    — verifies all ACs and Critical/High corner cases have test cases
+  @SystemAnalyst      — generates technical spec from requirements + test cases
+        ↕ loop (max 3 iterations)
+  @CornerCaseReviewer — attacks spec across 4 technical axes, @SystemAnalyst answers
+        ↕ loop (max 2 iterations)
+  @ConsistencyChecker — final consistency gate (spec vs requirements vs test plan)
   PO: /approve → artifacts ready
-PO: /new-feature → @Main reads artifacts, jumps to implementation planning
+PO: /new-feature → @Main reads artifacts, proceeds to implementation planning
 ```
 
-**6 analysis categories**, each framed at the business domain level:
+**6 analysis categories** (business domain level):
 
 | Category | Focus | Example question |
 |----------|-------|-----------------|
@@ -149,20 +151,22 @@ PO: /new-feature → @Main reads artifacts, jumps to implementation planning
 | Domain Invariants | Business rules that must never be violated | What if quantity goes negative? |
 | External Dependency Failures | Third-party systems, payment gateways | What if the payment gateway is down for 30 minutes? |
 | Scale & Capacity | Data volume, concurrency limits | What if 10,000 concurrent users trigger this flow? |
-| Temporal & Concurrency | Race conditions, distributed consistency | What if two cashiers process the last item simultaneously? |
+| Temporal & Concurrency | Race conditions, distributed consistency | What if two users act on the same record simultaneously? |
 
-**Severity classification** at the business level:
+**Severity classification**:
 
 | Severity | Definition | Enforcement |
 |----------|-----------|-------------|
-| **Critical** | Data loss, financial loss, security breach, regulatory violation | **Mandatory test task** in implementation plan |
-| **High** | User-visible incorrect result, broken business process | **Explicit decision** required (test or defer) |
+| **Critical** | Data loss, financial loss, security breach, regulatory violation | Mandatory test case — cannot be deferred |
+| **High** | User-visible incorrect result, broken business process | Test case required or explicit deferred note |
 | Medium | Degraded experience, workaround exists | Listed for awareness |
 | Low | Cosmetic, extreme edge | Documented for completeness |
 
-**Output:** Corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`.
-
-**Hard rule:** Every Critical corner case MUST have a corresponding test task in the implementation plan. Specs written without a corner case register are rejected as incomplete. Corner cases discovered during implementation are a **planning failure** — the system catches this at the design level, not the code level.
+**Artifacts produced:**
+- `.vault/concepts/<module>/requirements/<feature>.md` — business requirements
+- `.vault/concepts/<module>/plans/<feature>-corner-cases.md` — corner case register
+- `.vault/reference/<module>/spec/<feature>-requirements-test-plan.md` — requirements test plan
+- `.vault/reference/<module>/spec/<feature>.md` — technical spec
 
 ## Profiles
 
@@ -170,15 +174,21 @@ PO: /new-feature → @Main reads artifacts, jumps to implementation planning
 |---------|-------|-----------|
 | `kotlin-multiplatform.yaml` | KMP: Compose Desktop + Android + iOS + Ktor | Gradle, detekt/ktlint, forbidden patterns, serena, kotlin-lsp |
 | `kotlin-jvm-ktor.yaml` | Pure Kotlin/JVM Ktor backend | Gradle, detekt/ktlint, forbidden patterns, serena, kotlin-lsp |
-| `generic.yaml` | Any language | Minimal — fill everything manually |
-| `ollama-cloud.yaml` | Ollama cloud-hosted LLMs | DeepSeek V4 Pro + Qwen models, no Designer |
+| `java-spring.yaml` | Java Spring Boot | Maven/Gradle, Spring conventions, serena |
+| `go-gin.yaml` | Go + Gin | Go modules, golangci-lint |
+| `python-fastapi.yaml` | Python + FastAPI | pip/uv, ruff/mypy |
+| `typescript-nextjs.yaml` | TypeScript + Next.js | npm, ESLint, Prettier |
+| `rust-actix.yaml` | Rust + Actix-web | Cargo, clippy |
+| `csharp-aspnet.yaml` | C# + ASP.NET Core | dotnet, roslyn analyzers |
 | `minecraft-paper-plugin.yaml` | Minecraft Paper plugin (Kotlin/Gradle KTS) | Multi-module, Paper API conventions, MiniMessage/component rules |
+| `ollama-cloud.yaml` | Ollama cloud-hosted LLMs | DeepSeek V4 Pro + Qwen models, no Designer |
 | `requirements-pipeline.yaml` | Any language + AI-driven requirements pipeline | All 7 requirements agents, generic stack baseline |
+| `generic.yaml` | Any language | Minimal — fill everything manually |
 
 ## Requirements
 
-- [opencode](https://opencode.ai) installed
-- Python 3.8+ with PyYAML (`pip install pyyaml`)
+- [opencode](https://opencode.ai) v1.1.1 or later installed
+- Python 3.9+ with PyYAML (`pip install pyyaml`)
 - API key for your chosen provider (RouterAI, OpenRouter, etc.)
 - Optional: KnowledgeOS running at configured URL for the vault MCP
 
@@ -206,43 +216,61 @@ For CI/CD, inject as secrets. Never commit `.env` files — add to `.gitignore`.
 
 ## Workflow
 
+### With `requirements-pipeline` profile
+
 ```
+PO → /requirements-pipeline <description>
+      └─► @RequirementsPipeline (automated BA → CCR → QA → SA → consistency pipeline)
+              └─► PO: /approve → artifacts written to .planning/CURRENT.md
+
 PO → /new-feature <description>
       └─► @Main
-            ├─► step 1: @RequirementsPipeline (automated requirements phase)
-            │       ├─► @BusinessAnalyst     (draft requirements)
-            │       │       ↕ loop (max 3)
-            │       ├─► @CornerCaseReviewer  (attack requirements — BUSINESS mode)
-            │       ├─► @RequirementsQA      (generate test cases)
-            │       │       ↕ loop (max 2)
-            │       ├─► @CoverageChecker     (verify coverage)
-            │       ├─► @SystemAnalyst       (generate technical spec)
-            │       │       ↕ loop (max 3)
-            │       ├─► @CornerCaseReviewer  (attack spec — TECHNICAL mode)
-            │       ├─► @ConsistencyChecker  (final gate)
-            │       └─► PO: /approve → artifacts → PO: /resume @Main
-            │
-            ├─► step 2-4: SEARCH + DESIGN + LOOKUP
-            ├─► step 5:   writing-plans (plan + stage files using requirements/spec from step 1)
+            ├─► step 0.5: detect pre-made package in .planning/CURRENT.md → skip step 1
+            │             (OR: no pre-made package → dispatch @RequirementsPipeline as step 1)
+            ├─► step 2:   SEARCH existing code patterns and guidelines
+            ├─► step 3:   @Designer (UI features only)
+            ├─► step 4:   lookup skill (new library)
+            ├─► step 5:   writing-plans (plan + stage files — requirements/spec already exist)
             ├─► step 5a:  @QA DRAFT (implementation-level test plan)
             ├─► step 6:   CONFIRM — PO /approve (or @AutoApprover if AUTO_APPROVE=true)
             ├─► step 7:   @CodeWriter + @CodeReviewer cycles (per stage)
             ├─► step 7a:  @QA FINAL
             └─► step 8:   CLOSE
-
-              @RequirementsPipeline can also be run standalone:
-              PO → /requirements-pipeline <description>
-                      ... automated pipeline ...
-                   /approve → artifacts in .planning/CURRENT.md
-              PO → /new-feature → @Main detects pre-made package, skips step 1
-
-/requirements-pipeline → start AI-driven requirements pipeline for a feature
-/approve    → confirm pending plan / requirements package
-/resume     → resume interrupted session from .planning/CURRENT.md
-/checkpoint → update .planning/CURRENT.md with current state
-/review     → code review of staged / unstaged / all changes
-/update     → upgrade kit configuration to latest version
 ```
+
+### Without requirements pipeline (generic and other profiles)
+
+```
+PO → /new-feature <description>
+      └─► @Main
+            ├─► step 0:   CLASSIFY & CLARIFY (minimal questions to PO)
+            ├─► step 1:   corner-case-refinement skill + writing-plans for requirements + spec
+            ├─► step 2:   SEARCH
+            ├─► step 3:   @Designer (UI features only)
+            ├─► step 4:   lookup skill (new library)
+            ├─► step 5:   writing-plans (plan + stage files)
+            ├─► step 5a:  @QA DRAFT
+            ├─► step 6:   CONFIRM — PO /approve (or @AutoApprover if AUTO_APPROVE=true)
+            ├─► step 7:   @CodeWriter + @CodeReviewer cycles (per stage)
+            ├─► step 7a:  @QA FINAL
+            └─► step 8:   CLOSE
+```
+
+### Slash commands
+
+| Command | Description |
+|---------|-------------|
+| `/new-feature` | Start a new feature, bug fix, or tech task via @Main |
+| `/requirements-pipeline` | Run the AI-driven requirements pipeline (requirements-pipeline profile only) |
+| `/approve` | Confirm pending plan or requirements package |
+| `/resume` | Resume interrupted session from `.planning/CURRENT.md` |
+| `/checkpoint` | Write current state to `.planning/CURRENT.md` |
+| `/review` | Code review of staged / unstaged / all changes |
+| `/update` | Upgrade kit configuration to latest version |
+| `/update-deps` | Update project dependencies |
+| `/deploy` | Deploy / publish the project (requires PO confirmation) |
+| `/fix` | Quick bug fix with inline context |
+| `/lint` | Run linter and fix issues |
 
 ## Extending
 
