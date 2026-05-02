@@ -1,0 +1,89 @@
+# Profile: Requirements Pipeline
+# Extends generic baseline with the AI-driven requirements pipeline:
+# BA → CornerCaseReviewer → QA → CoverageChecker → SA → CornerCaseReviewer (tech) → ConsistencyChecker
+#
+# Use this profile if your team wants to:
+# - Minimize manual BA/QA/SA effort on requirements
+# - Catch corner cases before spec is written
+# - Produce a consistent requirements package (business reqs + test cases + tech spec)
+#   ready for development with only PO sign-off required
+#
+# Agents added by this profile (beyond generic baseline):
+#   @RequirementsPipeline  — orchestrator, entry point via /requirements-pipeline
+#   @BusinessAnalyst       — drafts and updates business requirements
+#   @CornerCaseReviewer    — attacks requirements and tech spec for gaps
+#   @RequirementsQA        — generates test cases from requirements (pre-spec)
+#   @CoverageChecker       — verifies all requirements have test cases
+#   @SystemAnalyst         — generates technical spec from requirements + test cases
+#   @ConsistencyChecker    — verifies spec does not contradict requirements
+#
+# Workflow:
+#   PO: /requirements-pipeline "description of the feature"
+#   ... automated pipeline runs ...
+#   PO: /approve  (or "reject: [what to redo]")
+#   PO: /new-feature "description" (hands artifacts to @Main for dev planning)
+
+project:
+  name: "My Project"
+  description: "Project description"
+
+stack:
+  language: generic
+  profile: requirements-pipeline
+  build_command: "make"
+  compile_command: "make check"
+  lint_command: "make lint"
+  test_command: "make test"
+
+modules:
+  - name: backend
+    gradle_module: null
+    source_root: "src/"
+    test_root: "tests/"
+    docs_path: "docs/backend/"
+    responsibility: "Backend API"
+
+provider:
+  name: routerai
+  base_url: https://routerai.ru/api/v1
+  api_key_env: ROUTERAI_OPENCODE
+
+models:
+  default: moonshotai/kimi-k2.6      # Used by: RequirementsPipeline, BusinessAnalyst, CornerCaseReviewer, CoverageChecker, SystemAnalyst, ConsistencyChecker
+  coder: qwen/qwen3-coder-next        # Used by: RequirementsQA, CodeWriter
+  reviewer: deepseek/deepseek-v4-pro  # Used by: CodeReviewer
+  designer: null
+  small: qwen/qwen3-coder-next
+
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+    url: http://localhost:8085/mcp
+  serena:
+    enabled: false
+
+lsp:
+  enabled: false
+  command: ""
+  extensions: []
+
+ui:
+  framework: null
+  platforms: []
+  colors: []
+
+code_quality:
+  forbidden_patterns:
+    - "Hardcoded secrets or API keys in code"
+    - "SQL string concatenation with user input"
+    - "Logging sensitive data (passwords, tokens, PII)"
+    - "TODO comments without tracking entry"
+
+formatter:
+  enabled: false
+  name: "default-fmt"
+  command: ["make", "format"]
+  extensions: []

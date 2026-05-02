@@ -7,6 +7,23 @@ description: Systematic corner case discovery during business requirements phase
 
 Business-level corner case analysis. Runs during the requirements phase — after clarifying questions with PO, before spec, design, or implementation plan. The goal is to surface every meaningful "what if" at the business domain level so the spec can address them proactively.
 
+## Invocation Interface
+
+Called by `@RequirementsPipeline` (Step 2.5) or `@Main` with:
+
+```
+Feature: [feature-name, snake_case]
+Module: [module name from manifest]
+Requirements file: [path to .vault/concepts/[module]/requirements/[feature].md]
+```
+
+The skill reads the requirements file, runs the 6-category analysis, and writes the corner case register to:
+`.vault/concepts/[module]/plans/[feature]-corner-cases.md`
+
+where `[module]` and `[feature]` are substituted from the input fields above.
+
+**Important:** The `Requirements file` input must point to the **final version** of the requirements — after all BA update iterations are complete. The skill reads whatever is currently in that file; it does not track history.
+
 ## When to Use
 
 **Primary trigger — REQUIRED before every FEATURE spec:**

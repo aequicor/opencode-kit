@@ -13,13 +13,16 @@ Type: FEATURE (or clarify if this is BUG/TECH)
 ```
 
 `@Main` will execute:
-1. CLASSIFY & CLARIFY — ask clarifying questions in one message.
-2. SEARCH — search KnowledgeOS on the topic.
-3. PLAN — create requirements, spec, plan + stages via superpowers:writing-plans.
-4. QA DRAFT — create test-plan.
-5. CONFIRM — show summary to PO, wait for /approve (or @AutoApprover if AUTO_APPROVE=true).
-6. EXECUTE — implement via @CodeWriter → @CodeReviewer cycles.
-7. QA FINAL — finalize test-plan.
-8. CLOSE — documentation and checkpoint.
+1. CLASSIFY & CLARIFY — ask minimal clarifying questions (module, description, UI?, constraints).
+2. REQUIREMENTS PHASE — dispatch @RequirementsPipeline: BA → CCR loop → QA → CoverageChecker →
+   SystemAnalyst → CCR technical loop → ConsistencyChecker → PO sign-off → /resume.
+   (Skipped if a pre-made requirements package is already in .planning/CURRENT.md)
+3. SEARCH — search KnowledgeOS for existing code patterns and guidelines.
+4. PLAN — create implementation plan + stage files (requirements and spec come from @RequirementsPipeline).
+5. QA DRAFT — create implementation test-plan via @QA.
+6. CONFIRM — show summary to PO, wait for /approve (or @AutoApprover if AUTO_APPROVE=true).
+7. EXECUTE — implement via @CodeWriter → @CodeReviewer cycles.
+8. QA FINAL — finalize test-plan.
+9. CLOSE — documentation and checkpoint.
 
 **Do not call @CodeWriter, @BugFixer or other agents directly — only @Main.**

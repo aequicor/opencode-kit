@@ -141,14 +141,28 @@ This reduces errors in multi-step tasks. For trivial actions (read known file, g
 
 ## Workflow
 
+### Standard development pipeline (`/new-feature`)
+
 ```
 PO ─► @Main (single entry point)
-        │   superpowers:brainstorming              → business requirements
-        │   corner-case-refinement                 → .vault/concepts/[module]/plans/<feature>-corner-cases.md
-        │                                             (business-level analysis BEFORE spec is written)
-        │   superpowers:writing-plans              → spec + plan in .vault/concepts/[module]/plans/
-        │                                             (spec MUST address Critical and High corner cases)
-        │   superpowers:executing-plans            → stage-by-stage implementation
+        │
+        ├─► @RequirementsPipeline  — full automated requirements phase:
+        │       ├─► @BusinessAnalyst      — draft requirements
+        │       │       ↕ (loop, max 3)
+        │       ├─► @CornerCaseReviewer   — attack requirements (BUSINESS mode)
+        │       ├─► @RequirementsQA       — generate test cases
+        │       │       ↕ (loop, max 2)
+        │       ├─► @CoverageChecker      — verify coverage
+        │       ├─► @SystemAnalyst        — generate technical spec
+        │       │       ↕ (loop, max 3)
+        │       ├─► @CornerCaseReviewer   — attack spec (TECHNICAL mode)
+        │       ├─► @ConsistencyChecker   — final gate
+        │       │       ↕ (loop, max 2)
+        │       └─► PO sign-off (/approve → artifacts → /resume @Main)
+        │
+        │   superpowers:writing-plans   → plan + stage files
+        │                                 (requirements/spec come from @RequirementsPipeline)
+        │   superpowers:executing-plans → stage-by-stage implementation
         │   superpowers:subagent-driven-development → dispatch executors
         │   checkpoint → .planning/CURRENT.md after each step
         │
@@ -157,34 +171,82 @@ PO ─► @Main (single entry point)
         ├─► @BugFixer      (defect analysis + fix + report)
         ├─► @debugger      (reproduction + root cause, read-only)
         ├─► @Designer      (UI/UX design)
-        ├─► @QA            (draft/final test plan)
+        ├─► @QA            (draft/final implementation test plan)
         ├─► @AutoApprover  (automated plan gatekeeper — at CONFIRM step when AUTO_APPROVE=true)
         └─► @PromptEngineer (agent prompt maintenance)
 ```
 
 **Pipeline order:**
-1. `clarifying questions` (Step 0) — PO answers including corner case exploration
-2. `corner-case-refinement` — business-level analysis of domain invariants, boundary conditions, failure modes
-3. `brainstorming` / `spec` — writes spec that MUST address Critical and High corner cases from the register
-4. `writing-plans` — writes implementation plan with mandatory test tasks for Critical corner cases
-5. `executing-plans` or `subagent-driven-development` — implements plan; no corner case discovery happens here
+1. `clarifying questions` (Step 0) — minimal: module, description, UI?, constraints
+2. `@RequirementsPipeline` — full BA/CCR/QA/SA pipeline; PO signs off → `/resume @Main`
+   (skipped if pre-made requirements package found in `.planning/CURRENT.md`)
+3. `writing-plans` — implementation plan + stage files using requirements/corner cases/spec as inputs
+4. `executing-plans` or `subagent-driven-development` — implements plan; no requirements discovery here
 
 **Single entry point — `@Main`.** Do not invoke other agents directly without @Main orchestration.
+
+### AI-driven requirements pipeline (`/requirements-pipeline`)
+
+Fully automated requirements phase. PO only needed at input and final sign-off.
+
+```
+PO ─► @RequirementsPipeline (entry point via /requirements-pipeline)
+        │
+        ├─► @BusinessAnalyst       — drafts business requirements from PO description
+        │       ↕ (loop, max 3)
+        ├─► @CornerCaseReviewer    — attacks requirements (BUSINESS mode), finds gaps
+        │
+        ├─► @RequirementsQA        — generates test cases from requirements + corner cases
+        │       ↕ (loop, max 2)
+        ├─► @CoverageChecker       — verifies all requirements/corner cases have test cases
+        │
+        ├─► @SystemAnalyst         — generates technical spec from requirements + test cases
+        │       ↕ (loop, max 3)
+        ├─► @CornerCaseReviewer    — attacks tech spec (TECHNICAL mode), finds gaps
+        │
+        ├─► @ConsistencyChecker    — verifies spec does not contradict requirements
+        │       ↕ (loop, max 2 — @SystemAnalyst resolves conflicts)
+        │
+        └─► PO sign-off (/approve) → artifacts ready for @Main /new-feature
+```
+
+**Artifacts produced:**
+- `.vault/concepts/[module]/requirements/[feature].md` — business requirements
+- `.vault/concepts/[module]/plans/[feature]-corner-cases.md` — corner case register
+- `.vault/reference/[module]/spec/[feature]-requirements-test-plan.md` — requirements test plan
+- `.vault/reference/[module]/spec/[feature].md` — technical spec
+
+### Requirements Pipeline → @Main Handoff
+
+`@RequirementsPipeline` writes four artifact paths to `.planning/CURRENT.md` on PO sign-off:
+
+```
+- requirements file: .vault/concepts/[module]/requirements/[feature].md
+- corner cases: .vault/concepts/[module]/plans/[feature]-corner-cases.md
+- test plan: .vault/reference/[module]/spec/[feature]-requirements-test-plan.md
+- spec: .vault/reference/[module]/spec/[feature].md
+```
+
+**Flow A — integrated (default):** `@RequirementsPipeline` is dispatched by `@Main` as step 1 of the FEATURE pipeline. After PO types `/approve` to `@RequirementsPipeline` and then `/resume`, `@Main` continues from step 2 (SEARCH).
+
+**Flow B — standalone:** PO first runs `/requirements-pipeline` separately, then `/new-feature`. `@Main` detects the pre-made package in `.planning/CURRENT.md` at step 0.5 and skips directly to step 3 (DESIGN).
+
+In both flows, `@Main` does **not** modify requirements, corner cases, or spec files — they are approved artifacts. If `@Main` finds a contradiction at planning time, it surfaces it to PO before starting implementation.
 
 ## File Access Matrix
 
 | Zone | Who writes | Who reads |
 |------|-----------|-----------|
 | `src/`, `*/src/test/` | @CodeWriter, @BugFixer | all |
-| `.vault/concepts/<module>/requirements/` | @Main | all |
-| `.vault/concepts/<module>/plans/` | @Main | all |
-| `.vault/reference/<module>/spec/` | @Main, @CodeWriter, @QA | all |
+| `.vault/concepts/<module>/requirements/` | @Main, @BusinessAnalyst | all |
+| `.vault/concepts/<module>/plans/` | @Main, @BusinessAnalyst, corner-case-refinement skill | all |
+| `.vault/reference/<module>/spec/` | @Main, @CodeWriter, @QA, @RequirementsQA, @SystemAnalyst | all |
 | `.vault/how-to/<module>/plans/` | @Main | all |
 | `.vault/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
 | `.vault/guidelines/<module>/reports/` | @BugFixer | all |
 | `.vault/guidelines/libs/` | @CodeWriter, @BugFixer | all |
 | `.opencode/agents/`, `.opencode/skills/` | @PromptEngineer | all |
-| `.planning/CURRENT.md` | @Main (checkpoint after each step) | all |
+| `.planning/CURRENT.md` | @Main, @RequirementsPipeline (checkpoint after each step) | all |
 | `opencode.json`, build files | human (PO) | all |
 
 ## Tool Naming — CRITICAL

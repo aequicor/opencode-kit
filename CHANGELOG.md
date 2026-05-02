@@ -2,6 +2,27 @@
 
 All notable changes to opencode-kit will be documented in this file.
 
+## [1.4.0] — 2026-05-02
+
+### Added
+- AI-driven requirements pipeline (`/requirements-pipeline` command + `requirements-pipeline` profile)
+  - `@RequirementsPipeline` — orchestrator: BA → CCR loop → QA → CoverageChecker → SA → CCR loop → ConsistencyChecker → PO sign-off
+  - `@BusinessAnalyst` — drafts and updates business requirements (DRAFT / UPDATE modes)
+  - `@CornerCaseReviewer` — adversarial attacker for requirements (BUSINESS mode, 6 axes) and technical spec (TECHNICAL mode, 4 axes); loop-safe repeat-run handling
+  - `@RequirementsQA` — generates requirements-phase test cases before spec exists (DRAFT / FIX modes)
+  - `@CoverageChecker` — verifies every AC and Critical/High corner case has a test case; deferred note support
+  - `@SystemAnalyst` — generates technical spec from requirements + test cases (DRAFT / UPDATE modes); handles CCR questions and ConsistencyChecker conflicts
+  - `@ConsistencyChecker` — final gate: Spec vs Requirements (completeness + correctness) and test plan alignment
+- `corner-case-refinement` skill: `Invocation Interface` section documenting input fields, output path, and final-version contract
+- `@Main` FEATURE pipeline now dispatches `@RequirementsPipeline` as step 1 (fully automated requirements phase); requirements.md and spec.md are no longer written by @Main
+- Pre-made requirements package detection at step 0.5 — skips @RequirementsPipeline when `/requirements-pipeline` was run standalone beforehand
+- `_shared.md`: AI-driven requirements pipeline diagram, `@Main → @RequirementsPipeline` handoff protocol (Flow A integrated, Flow B standalone)
+
+### Changed
+- `@Main` FEATURE clarifying questions simplified — removed manual corner case axis exploration (handled by @RequirementsPipeline)
+- `@Main` PLAN step no longer writes `requirements.md` or `spec.md` — these are produced by @RequirementsPipeline
+- `new-feature.md` command updated to document the full 9-step pipeline including @RequirementsPipeline
+
 ## [1.3.0] — 2026-04-30
 
 ### Added

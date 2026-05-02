@@ -1,19 +1,20 @@
 # opencode-kit
 
-Reusable OpenCode AI agent configuration. Clone this kit or use the zero-clone AI Setup Prompt — either way, your project gets a full orchestrated AI development workflow with 9 specialized agents.
+Reusable OpenCode AI agent configuration. Clone this kit or use the zero-clone AI Setup Prompt — either way, your project gets a full orchestrated AI development workflow with 9 core agents and an optional 7-agent AI-driven requirements pipeline.
 
 **Migrated to OpenCode v1.1.1+ syntax** — uses `permission` (not deprecated `tools`), `external_directory`, `doom_loop`, `small_model`, `compaction`, `formatter`.
 
 ## What you get
 
-- **9 specialized AI agents**: Main (orchestrator), CodeWriter, CodeReviewer, BugFixer, debugger, QA, Designer, PromptEngineer, AutoApprover
+- **9 core AI agents**: Main (orchestrator), CodeWriter, CodeReviewer, BugFixer, debugger, QA, Designer, PromptEngineer, AutoApprover
+- **+7 requirements pipeline agents** *(optional, `requirements-pipeline` profile)*: RequirementsPipeline, BusinessAnalyst, CornerCaseReviewer, RequirementsQA, CoverageChecker, SystemAnalyst, ConsistencyChecker
 - **Multi-model routing**: different models per role (orchestration vs coding vs review vs design) + `small_model` for lightweight tasks
 - **MCP integrations**: context7 (library docs), serena (code navigation), KnowledgeOS (project vault)
 - **Anti-loop guardrails**: circuit breakers, context discipline, token budget management, native `doom_loop` detection
 - **Compaction & token budget**: auto-compaction with reserved buffer, 3-tier token budget (50%/75%/90%)
 - **Session continuity**: checkpoint pattern via `.planning/CURRENT.md`
 - **Documentation hierarchy**: per-module `requirements/spec/plans/reports` structure
-- **6 slash commands**: `/new-feature`, `/resume`, `/checkpoint`, `/update`, `/approve`, `/review`
+- **7 slash commands**: `/new-feature`, `/requirements-pipeline`, `/resume`, `/checkpoint`, `/update`, `/approve`, `/review`
 - **Human-in-the-loop or full automation**: `/approve` for manual confirmation; `AUTO_APPROVE=true` for zero-touch pipelines via `@AutoApprover`
 - **Security perimeter**: `external_directory` permission, granular bash rules, destructive command denials
 
@@ -92,30 +93,51 @@ Do not skip steps. Do not guess values.
 
 ## Agent Roster
 
+### Core agents (all profiles)
+
 | Agent | Role | Model class | Mode | Invoked by |
 |-------|------|-------------|------|------------|
 | Main | Orchestrator, single entry point | Default (best SWE) | Primary | PO directly |
-| CodeWriter | Kotlin/code implementation, one stage at a time | Coder | All | @Main via task |
+| CodeWriter | Code implementation, one stage at a time | Coder | All | @Main via task |
 | CodeReviewer | Read-only code review | Reviewer | Subagent | @Main after CodeWriter |
 | BugFixer | Root cause analysis + fix + regression test | Coder | All | @Main for bugs |
 | debugger | Read-only investigation, produces failing test | Coder | All | @Main before BugFixer |
-| QA | Test plan (Draft before, Final after implementation) | Coder | Subagent | @Main twice per feature |
+| QA | Implementation test plan (Draft + Final) | Coder | Subagent | @Main twice per feature |
 | Designer | UI/UX description, read-only | Designer | Subagent | @Main for UI features |
 | PromptEngineer | Maintains agent prompts and skills | Reviewer | Subagent | @Main for prompt work |
-| AutoApprover | Automated plan gatekeeper — verifies plan completeness and spec alignment | Reviewer | Subagent | @Main in AUTO_APPROVE mode |
+| AutoApprover | Automated plan gatekeeper — verifies plan completeness | Reviewer | Subagent | @Main in AUTO_APPROVE mode |
+
+### Requirements pipeline agents (`requirements-pipeline` profile)
+
+| Agent | Role | Model class | Mode | Invoked by |
+|-------|------|-------------|------|------------|
+| RequirementsPipeline | Requirements orchestrator — chains BA → CCR → QA → SA → consistency | Default | Primary | PO via /requirements-pipeline, or @Main step 1 |
+| BusinessAnalyst | Drafts and updates business requirements (DRAFT / UPDATE) | Default | Subagent | @RequirementsPipeline |
+| CornerCaseReviewer | Adversarial attacker — finds gaps in requirements (BUSINESS) and spec (TECHNICAL) | Default | Subagent | @RequirementsPipeline |
+| RequirementsQA | Generates test cases from requirements + corner cases (pre-spec) | Coder | Subagent | @RequirementsPipeline |
+| CoverageChecker | Verifies all requirements and corner cases have test cases | Default | Subagent | @RequirementsPipeline |
+| SystemAnalyst | Generates technical spec from requirements + test cases | Default | Subagent | @RequirementsPipeline |
+| ConsistencyChecker | Final gate — verifies spec does not contradict requirements | Default | Subagent | @RequirementsPipeline |
 
 ## Corner Case Analysis System
 
 Every feature starts with a systematic corner case analysis during the **business requirements phase** — before a single line of spec or code is written. The system prevents late-cycle surprises by surfacing domain invariants, boundary conditions, failure modes, and concurrency scenarios at the business planning level.
 
-### How it works
+### How it works (full pipeline)
 
 ```
-PO task → clarifying questions (incl. corner case exploration) →
-  corner-case-refinement → corner case register →
-    brainstorming / spec (MUST address Critical + High) →
-      writing-plans (Critical = mandatory test task) →
-        implementation (no corner case discovery here)
+PO: /requirements-pipeline "description"   (or automatically as @Main step 1)
+  @BusinessAnalyst    — drafts requirements
+  @CornerCaseReviewer — attacks requirements across 6 categories (loop, max 3)
+  @BusinessAnalyst    — updates requirements with answers
+  corner-case-refinement skill — formalizes findings into register
+  @RequirementsQA     — generates test cases (pre-spec)
+  @CoverageChecker    — verifies all requirements have test cases (loop, max 2)
+  @SystemAnalyst      — generates technical spec
+  @CornerCaseReviewer — attacks spec across 4 technical axes (loop, max 3)
+  @ConsistencyChecker — final consistency gate (loop, max 2)
+  PO: /approve → artifacts ready
+PO: /new-feature → @Main reads artifacts, jumps to implementation planning
 ```
 
 **6 analysis categories**, each framed at the business domain level:
@@ -151,6 +173,7 @@ PO task → clarifying questions (incl. corner case exploration) →
 | `generic.yaml` | Any language | Minimal — fill everything manually |
 | `ollama-cloud.yaml` | Ollama cloud-hosted LLMs | DeepSeek V4 Pro + Qwen models, no Designer |
 | `minecraft-paper-plugin.yaml` | Minecraft Paper plugin (Kotlin/Gradle KTS) | Multi-module, Paper API conventions, MiniMessage/component rules |
+| `requirements-pipeline.yaml` | Any language + AI-driven requirements pipeline | All 7 requirements agents, generic stack baseline |
 
 ## Requirements
 
@@ -185,23 +208,36 @@ For CI/CD, inject as secrets. Never commit `.env` files — add to `.gitignore`.
 
 ```
 PO → /new-feature <description>
-      └─► @Main (CLASSIFY → CLARIFY incl. corner cases → SEARCH → CORNER CASE ANALYSIS → DESIGN → SPEC → PLAN → QA DRAFT → CONFIRM → EXECUTE → QA FINAL → CLOSE)
-                ├─► corner-case-refinement (business-phase analysis BEFORE spec)
-                ├─► @Designer     (UI features)
-                ├─► @CodeWriter   (implementation, one stage at a time)
-                ├─► @CodeReviewer (after each stage)
-                ├─► @BugFixer     (for bugs)
-                ├─► @debugger     (complex bugs without stacktrace)
-                ├─► @QA           (test plan draft + final)
-                └─► @AutoApprover (at CONFIRM step when AUTO_APPROVE=true)
+      └─► @Main
+            ├─► step 1: @RequirementsPipeline (automated requirements phase)
+            │       ├─► @BusinessAnalyst     (draft requirements)
+            │       │       ↕ loop (max 3)
+            │       ├─► @CornerCaseReviewer  (attack requirements — BUSINESS mode)
+            │       ├─► @RequirementsQA      (generate test cases)
+            │       │       ↕ loop (max 2)
+            │       ├─► @CoverageChecker     (verify coverage)
+            │       ├─► @SystemAnalyst       (generate technical spec)
+            │       │       ↕ loop (max 3)
+            │       ├─► @CornerCaseReviewer  (attack spec — TECHNICAL mode)
+            │       ├─► @ConsistencyChecker  (final gate)
+            │       └─► PO: /approve → artifacts → PO: /resume @Main
+            │
+            ├─► step 2-4: SEARCH + DESIGN + LOOKUP
+            ├─► step 5:   writing-plans (plan + stage files using requirements/spec from step 1)
+            ├─► step 5a:  @QA DRAFT (implementation-level test plan)
+            ├─► step 6:   CONFIRM — PO /approve (or @AutoApprover if AUTO_APPROVE=true)
+            ├─► step 7:   @CodeWriter + @CodeReviewer cycles (per stage)
+            ├─► step 7a:  @QA FINAL
+            └─► step 8:   CLOSE
 
-              At CONFIRM step, two modes:
-              • Manual   — @Main pauses, PO reviews and types /approve to continue
-              • Automated — PO adds AUTO_APPROVE=true to the task; @Main dispatches
-                            @AutoApprover which checks plan/spec alignment and returns
-                            APPROVED or NEEDS_CHANGES (max 2 fix cycles, then escalates)
+              @RequirementsPipeline can also be run standalone:
+              PO → /requirements-pipeline <description>
+                      ... automated pipeline ...
+                   /approve → artifacts in .planning/CURRENT.md
+              PO → /new-feature → @Main detects pre-made package, skips step 1
 
-/approve    → confirm pending plan and proceed to EXECUTE (manual mode)
+/requirements-pipeline → start AI-driven requirements pipeline for a feature
+/approve    → confirm pending plan / requirements package
 /resume     → resume interrupted session from .planning/CURRENT.md
 /checkpoint → update .planning/CURRENT.md with current state
 /review     → code review of staged / unstaged / all changes

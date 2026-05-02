@@ -73,16 +73,13 @@ Ask clarifying questions in **one message** — do not proceed until PO responds
 Clarifying questions:
 
 1. Which module(s) are affected?
-2. Describe the expected scenario from the user's perspective (user story).
-3. Corner cases — explore systematically:
-   a. What are the domain invariants that must never be violated?
-   b. What happens when key inputs are missing, empty, or invalid?
-   c. What are the scale limits (users, data volume, concurrency)?
-   d. What business rules govern edge conditions (boundary values, timeouts, retries)?
-   e. Are there known race conditions or concurrency scenarios?
+2. Briefly describe what the user needs (1-3 sentences).
+3. Does this feature affect UI? (if yes — a separate design step will follow)
 4. Are there constraints: performance, security, compatibility?
-5. Does this feature affect UI? (if yes — a separate design step will follow)
-6. Is it connected to other open tasks or features?
+5. Is it connected to other open tasks or features?
+
+Note: corner case analysis, requirements, and technical spec are produced
+automatically by @RequirementsPipeline — no deep corner case exploration needed here.
 
 Waiting for response before planning.
 ```
@@ -117,35 +114,58 @@ Waiting for response before planning.
 After receiving answers from PO:
 
 ```
-1. SEARCH  — knowledge-my-app_search_docs on the feature topic in .vault/
-              Read every found file in full.
-2. CORNER CASES — call skill `corner-case-refinement`. Based on PO's answers from step 0,
-                   systematically scan for edge cases across all 6 categories:
-                   input boundaries, state/lifecycle, concurrency, error paths, scale, domain invariants.
-                   Produce corner case register at .vault/concepts/[module]/plans/[feature]-corner-cases.md.
-                   Write sequentially: register file → compress() → checkpoint.
-                   The register becomes a mandatory input for DESIGN and PLAN steps — every spec must
-                   address Critical and High corner cases.
+0.5 PRE-MADE PACKAGE CHECK — read .planning/CURRENT.md.
+    If it contains all four keys ("requirements file:", "corner cases:", "test plan:", "spec:"):
+      → Pre-made requirements package detected (produced by /requirements-pipeline).
+        Read all four artifact files. Skip step 1, proceed to step 2 (SEARCH).
+    Else:
+      → No pre-made package. Proceed from step 1.
+
+1. REQUIREMENTS PHASE — dispatch @RequirementsPipeline via task:
+              Feature: [snake_case feature name derived from PO description]
+              Module: [module from Step 0]
+              Description: [PO's description from Step 0]
+
+              @RequirementsPipeline runs autonomously:
+              BA draft → CCR BUSINESS loop → RequirementsQA → CoverageChecker →
+              SystemAnalyst → CCR TECHNICAL loop → ConsistencyChecker → PO sign-off.
+
+              After PO approves @RequirementsPipeline output, PO types /resume to continue @Main.
+
+              On resume: read artifacts from .planning/CURRENT.md —
+                requirements file: .vault/concepts/[module]/requirements/[feature].md
+                corner cases:      .vault/concepts/[module]/plans/[feature]-corner-cases.md
+                test plan:         .vault/reference/[module]/spec/[feature]-requirements-test-plan.md
+                spec:              .vault/reference/[module]/spec/[feature].md
+
+2. SEARCH  — knowledge-my-app_search_docs on the feature topic in .vault/
+              Read every found file in full (existing code patterns, related guidelines).
+
 3. DESIGN  — if UI feature: dispatch @Designer for UI/UX description (via task).
+
 4. LOOKUP  — if unfamiliar library needed: call skill `lookup`.
+
 5. PLAN    — call superpowers:writing-plans.
+              Input: requirements + corner case register + spec from step 1/0.5.
+              requirements.md and spec.md are NOT written here — they come from @RequirementsPipeline.
               Create files STRICTLY SEQUENTIALLY (one file per turn):
-              a. write .vault/concepts/[module]/requirements/[feature].md → compress() → checkpoint
-              b. write .vault/reference/[module]/spec/[feature].md → compress() → checkpoint
-              c. write .vault/concepts/[module]/plans/[feature]-plan.md → compress() → checkpoint
-              d. For EACH stage file — separate turn:
+              a. write .vault/concepts/[module]/plans/[feature]-plan.md → compress() → checkpoint
+              b. For EACH stage file — separate turn:
                  write .vault/how-to/[module]/plans/[feature]-stage-01.md → compress() → checkpoint
                  write .vault/how-to/[module]/plans/[feature]-stage-02.md → compress() → checkpoint
                  (etc. — NOT in parallel, even if context seems to allow it)
-              e. After each file: knowledge-my-app_write_guideline(file)
+              c. After each file: knowledge-my-app_write_guideline(file)
               ⚠️ FORBIDDEN: create 2+ stage files in one turn.
-              ⚠️ Corner case register (.vault/concepts/[module]/plans/[feature]-corner-cases.md)
-                 is mandatory input — every Critical corner case must have a corresponding test task.
+              ⚠️ Every Critical corner case from the register MUST have a corresponding test task.
+
 5a. QA DRAFT — dispatch @QA (DRAFT mode): creates .vault/reference/[module]/spec/[feature]-test-plan.md.
-6. CONFIRM — show PO summary: goal, modules, stages, risks, link to test-plan.
+              (implementation-level test plan, separate from requirements-phase test plan)
+
+6. CONFIRM — show PO summary: goal, modules, stages, risks, links to requirements test plan + impl test plan.
              AUTO_APPROVE=false → wait for PO /approve.
              AUTO_APPROVE=true  → dispatch @AutoApprover (see AUTO_APPROVE mode section).
              CHECKPOINT: write to .planning/CURRENT.md (DONE: plan created, NEXT: await approve).
+
 7. EXECUTE — call superpowers:executing-plans. For each incomplete stage:
                a. Read stage file and referenced guidelines.
                b. Dispatch @CodeWriter via task with stage file and context.
@@ -155,7 +175,9 @@ After receiving answers from PO:
                f. Update stage status in plan file.
                g. CHECKPOINT after each stage: .planning/CURRENT.md.
                h. compress.
+
 7a. QA FINAL — after last stage: dispatch @QA (FINAL mode).
+
 8. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in .vault/guidelines/[module]/.
              CHECKPOINT: .planning/CURRENT.md (DONE: feature complete, NEXT: none).
 ```
