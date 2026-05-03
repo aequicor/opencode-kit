@@ -89,7 +89,9 @@ export ROUTERAI_OPENCODE=sk-...
 
 ## First session
 
-Open your project in OpenCode and start with a feature or bug:
+Open your project in OpenCode. **Select the `Main` agent** from the agent picker — all slash commands and tasks go through `@Main`, which then dispatches subagents automatically.
+
+Start a new feature:
 
 ```
 /new-feature Add user authentication with JWT tokens
@@ -97,17 +99,19 @@ Open your project in OpenCode and start with a feature or bug:
 
 `@Main` will clarify scope, plan stages, get your approval, then dispatch `@CodeWriter`, `@CodeReviewer`, and `@QA` automatically.
 
-For a bug:
+Fix a bug:
 
 ```
 /fix Login throws 500 when email contains a plus sign
 ```
 
-For a code review of current changes:
+Review current changes:
 
 ```
 /review
 ```
+
+> **Note:** Only `@Main` and `@RequirementsPipeline` are meant to be selected directly by you. All other agents (`@CodeWriter`, `@QA`, `@BugFixer`, etc.) are subagents — they are invoked automatically and should not be selected manually.
 
 ---
 
