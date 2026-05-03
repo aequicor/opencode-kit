@@ -206,6 +206,16 @@ This is the only integration point. Writing-plans reads the register as input. I
 - **No spec without corners.** A spec written without a corner case register is speculation written without due diligence.
 - **YAGNI for corners.** Don't plan for scale-5 problems on a scale-1 system. But DO document the assumed scale.
 
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Requirements file does not exist or is empty | STOP. Report: `Requirements file not found at [path] — BA must produce it first.` |
+| 6-category scan produces zero corner cases | WARNING. Write register with 0 rows + a note explaining why: `No corner cases identified because [reason]. PO review recommended — every feature accepting input has at least input boundary corner cases.` |
+| Cannot answer a category question | Flag it in the register row as `NEEDS_PO_DECISION`. Do not silently skip — PO must confirm or provide the answer. |
+| Register file cannot be written (path invalid) | Fallback to `.vault/concepts/[module]/plans/[feature]-corner-cases.md`. If that also fails, STOP and report the path error. |
+| Previous corner case register exists for same feature | Overwrite only if PO confirmed rejection of previous version. Otherwise, append new findings with a `## Supplement — [date]` section. |
+
 ## Red Flags
 
 - **Corner case register produced after spec is written** — Process failure. Spec was written blind.

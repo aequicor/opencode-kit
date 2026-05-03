@@ -1,11 +1,23 @@
 ---
 name: code-review-checklist
-description: Systematic pre-commit code review checklist. Ensures all changes are reviewed before commit.
+description: Pre-commit code review checklist filled by @CodeReviewer after each CodeWriter cycle. Use ONLY when reviewing code changes before commit — not for design reviews, not for requirements analysis.
 ---
 
 # Code Review Checklist
 
-When reviewing a pull request or changeset, walk through every item.
+@CodeReviewer fills this checklist after each @CodeWriter cycle. Walk through every item. Mark each `[ ]` as `[x]` when verified. If any item fails — describe the issue, reference the file:line, and return to @CodeWriter.
+
+## Invocation
+
+Called by @CodeReviewer automatically after each @CodeWriter stage completion. No manual trigger needed.
+
+## Input
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `stage_file` | Yes | Path to the stage file @CodeWriter implemented |
+| `files_changed` | Yes | List of changed files (diff summary) |
+| `corner_cases` | No | Path to corner case register (if available) |
 
 ## Functionality
 
@@ -23,6 +35,7 @@ When reviewing a pull request or changeset, walk through every item.
 - [ ] Meaningful variable and function names
 - [ ] No dead code, commented-out blocks, or unused imports
 - [ ] Consistent formatting (auto-formatter applied)
+- [ ] No patterns from forbidden list: `{{FORBIDDEN_PATTERNS_LIST}}`
 
 ## Architecture
 
@@ -59,3 +72,26 @@ When reviewing a pull request or changeset, walk through every item.
 - [ ] Complex logic has inline comments explaining WHY, not WHAT
 - [ ] Spec/requirements match implementation
 - [ ] Any new guidelines saved to `.vault/guidelines/[module]/`
+
+## Output
+
+Return a verdict:
+
+```
+VERDICT: [PASS | CRITICAL | HIGH | MEDIUM]
+FILES_REVIEWED: [list]
+ISSUES:
+- [severity] [file:line] [description] → [fix suggestion]
+
+CHANGES_SUMMARY: [1-2 sentences]
+```
+
+**PASS** → proceed to next stage.  
+**CRITICAL/HIGH** → return to @CodeWriter with issues.  
+**MEDIUM** → document and proceed (fix later).
+
+## Error Handling
+
+- If stage file is missing or empty → report `VERDICT: CRITICAL — stage file not found at [path]`. Do not proceed.
+- If diff is empty (no code changes) → report `VERDICT: CRITICAL — @CodeWriter produced no changes for [stage]`. Do not proceed.
+- If corner case register references a Critical item with no corresponding test → flag as HIGH issue, do not auto-approve.

@@ -1,5 +1,5 @@
 ---
-description: Full AI-driven requirements pipeline. Runs BA → CornerCaseReviewer (business loop) → RequirementsQA → CoverageChecker → SystemAnalyst → CornerCaseReviewer (technical loop) → ConsistencyChecker → PO sign-off. Called by @Main at step 1 of a FEATURE task.
+description: Full AI-driven requirements pipeline: BA → CCR (business loop) → QA → Coverage → SA → CCR (technical loop) → Consistency → PO sign-off. Use ONLY when @Main starts a FEATURE task and needs a complete requirements package before implementation.
 ---
 
 You are executing the requirements pipeline on behalf of @Main. You dispatch subagents and write checkpoints exactly as specified below. PO is the only human touchpoint — at input and final sign-off.
@@ -395,3 +395,16 @@ Skill complete. Return control to @Main — proceed to step 2 (SEARCH).
 2. Discard all artifacts created at Step N and after. Artifacts from steps before N remain valid.
 3. Write checkpoint: `REJECTED: restarting from Step N — [PO reason]`.
 4. Restart from Step N using the retained inputs.
+
+---
+
+## Error Handling
+
+| Situation | Action |
+|-----------|--------|
+| Agent returns empty result 2× in a row | STOP. Report which agent and what was expected. Surface to PO. |
+| Requirements file not created after Step 1 | STOP. Report BA failure. Ask PO if they want to retry with a simpler description. |
+| Corner case register is empty after Step 2.5 | WARNING: write checkpoint with 0 Critical, 0 High. Proceed — but surface to PO at sign-off that no corner cases were found. |
+| PO does not respond to sign-off within the session | Write checkpoint `BLOCKED: awaiting PO sign-off`. Do NOT proceed to implementation. |
+| Artifact file paths referenced by subagents don't exist | STOP. Report missing file path. Likely a previous step produced no output — restart from that step. |
+| Manifest module not found | In Step 0: list available modules, ask PO to pick one. Do not proceed without valid module. |

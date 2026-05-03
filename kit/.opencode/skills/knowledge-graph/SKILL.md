@@ -1,27 +1,48 @@
 ---
 name: knowledge-graph
-description: Build and query a semantic knowledge graph from project documentation using embeddings. Creates persistent vector index for cross-document navigation.
+description: Build and query a semantic knowledge graph from project documentation when @Main needs cross-module understanding that keyword search cannot provide. Use ONLY when simple search fails to connect related concepts across documents — not for single-module lookups.
 ---
 
 # Knowledge Graph Skill
 
-Skill for building a semantic layer over project documentation. Transforms linear file hierarchies into a queryable knowledge graph.
+When @Main asks a question that spans multiple modules or document types, and `knowledge-my-app_search_docs` returns disconnected fragments, this skill builds a semantic layer connecting them.
 
-## When to trigger
+## When to Use
 
-Activate when:
-- @Main needs to understand relationships between multiple documents
-- A question spans multiple modules or document types
-- Context would benefit from semantic search beyond keyword matching
-- New documents were added — rebuild the index
+- @Main asks a cross-module question (e.g. "How does auth in server relate to session management in client?")
+- Search returns fragments but not their relationships
+- New documents were added and the index is stale
+- @PromptEngineer needs to understand document structure before refactoring prompts
+
+**Do NOT activate for:**
+- Single-module lookups — use `knowledge-my-app_search_docs` directly
+- Keyword searches — use grep or search instead
+- When the index is empty and no documents exist yet
+
+## Input
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `query` | Yes | The cross-module question or relationship to explore |
+| `modules` | No | List of modules to scope the search. Omit for all modules |
+| `rebuild` | No | `true` to force full reindex. Default: `false` (incremental) |
+
+## Invocation
+
+```
+skill: knowledge-graph
+query: "How does authentication in server relate to session management in client?"
+modules: [server, client]
+rebuild: false
+```
 
 ## Architecture
 
 ```
-.vault/                  kit/.opencode/knowledge-graph/
-  concepts/                    index.json         — document metadata
-  reference/                   embeddings.json    — vector storage (if available)
-  guidelines/                  graph.json         — entity relationships
+.vault/                           .opencode/knowledge-graph/
+  concepts/                           index.json         — document metadata
+  reference/                          graph.json         — entity relationships
+  guidelines/                         embeddings.json    — vector storage (if available)
   how-to/
   tutorials/
 ```
@@ -57,7 +78,21 @@ for each document:
 }
 ```
 
-Returns ranked results with path, excerpt, and related entities.
+Response:
+
+```json
+{
+  "results": [
+    {
+      "path": ".vault/reference/server/spec/auth.md",
+      "excerpt": "Session tokens are issued by AuthService...",
+      "entities": ["AuthService", "SessionToken", "AuthConfig"],
+      "related": [".vault/concepts/server/requirements/auth.md"]
+    }
+  ],
+  "graph_summary": "AuthService → SessionManager (implements), AuthConfig ← SessionToken (references)"
+}
+```
 
 ### 4. Entity extraction rules
 
@@ -88,6 +123,12 @@ Returns ranked results with path, excerpt, and related entities.
 | `glob` | Find documents to index |
 | `read` | Read document content for extraction |
 | `knowledge-my-app_write_guideline` | Persist index/graph artifacts |
+
+## Error Handling
+
+- If `.vault/` is empty → report `NO DATA: No documents found in .vault/. Build requirements and spec first.` Do not build an empty index.
+- If no documents match the query modules → report `NO MATCH: No documents found for modules [list]. Available modules: [from index or manifest].`
+- If index is stale (documents newer than index.json) → automatically rebuild before querying. Report: `INDEX STALE: Rebuilding index (N new/updated documents).`
 
 ## Principles
 
