@@ -111,7 +111,7 @@ Review current changes:
 /review
 ```
 
-> **Note:** Only `@Main` and `@RequirementsPipeline` are meant to be selected directly by you. All other agents (`@CodeWriter`, `@QA`, `@BugFixer`, etc.) are subagents — they are invoked automatically and should not be selected manually.
+> **Note:** `@Main` is the only agent you select directly. All other agents (`@CodeWriter`, `@QA`, `@BugFixer`, `@BusinessAnalyst`, etc.) are subagents — invoked automatically by `@Main` and should not be selected manually.
 
 ---
 
@@ -170,11 +170,12 @@ Pick the profile closest to your stack when creating your manifest:
 | `@PromptEngineer` | Maintains and improves agent prompts and skills |
 | `@AutoApprover` | Automated plan gatekeeper when `AUTO_APPROVE=true` |
 
-### Requirements pipeline agents (`requirements-pipeline` profile)
+### Requirements pipeline subagents (`requirements-pipeline` profile)
+
+Invoked automatically by `@Main` via the `requirements-pipeline` skill — not selected directly.
 
 | Agent | What it does |
 |---|---|
-| `@RequirementsPipeline` | Orchestrates the full BA → spec pipeline |
 | `@BusinessAnalyst` | Drafts and iterates business requirements |
 | `@CornerCaseReviewer` | Adversarial attacker — finds gaps in requirements and spec |
 | `@RequirementsQA` | Generates test cases from requirements + corner cases |
@@ -192,7 +193,7 @@ Use `/requirements-pipeline` before `/new-feature` to get AI-generated, reviewed
 /requirements-pipeline "Users can reset their password via email link"
 ```
 
-The pipeline runs: `@BusinessAnalyst` → `@CornerCaseReviewer` (adversarial loop) → `@RequirementsQA` → `@CoverageChecker` → `@SystemAnalyst` → `@ConsistencyChecker`.
+The pipeline is executed by `@Main` via the `requirements-pipeline` skill: `@BusinessAnalyst` → `@CornerCaseReviewer` (adversarial loop) → `@RequirementsQA` → `@CoverageChecker` → `@SystemAnalyst` → `@ConsistencyChecker`.
 
 When the pipeline finishes, run `/approve` to lock the artifacts, then `/new-feature` — `@Main` picks up the spec automatically and skips the planning phase.
 

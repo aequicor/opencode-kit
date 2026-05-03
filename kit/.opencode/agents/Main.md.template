@@ -3,7 +3,7 @@ description: Orchestrator. Single entry point for PO. Plans, dispatches, writes 
 mode: primary
 model: {{PROVIDER_ID}}/{{DEFAULT_MODEL}}
 temperature: 0.2
-steps: 40
+steps: 100
 permission:
   read: allow
   edit: allow
@@ -79,7 +79,7 @@ Clarifying questions:
 5. Is it connected to other open tasks or features?
 
 Note: corner case analysis, requirements, and technical spec are produced
-automatically by @RequirementsPipeline — no deep corner case exploration needed here.
+automatically via the requirements-pipeline skill — no deep corner case exploration needed here.
 
 Waiting for response before planning.
 ```
@@ -121,36 +121,21 @@ After receiving answers from PO:
     Else:
       → No pre-made package. Proceed from step 1.
 
-1. REQUIREMENTS PHASE — check if `.opencode/agents/RequirementsPipeline.md` exists.
+1. REQUIREMENTS PHASE — call skill `requirements-pipeline`:
+              Feature: [snake_case feature name derived from PO description]
+              Module: [module from Step 0]
+              Description: [PO's description from Step 0]
 
-   ### Mode A — requirements pipeline available (file exists):
-
-              Dispatch @RequirementsPipeline via task:
-                Feature: [snake_case feature name derived from PO description]
-                Module: [module from Step 0]
-                Description: [PO's description from Step 0]
-
-              @RequirementsPipeline runs autonomously:
+              The skill runs autonomously:
               BA draft → CCR BUSINESS loop → RequirementsQA → CoverageChecker →
               SystemAnalyst → CCR TECHNICAL loop → ConsistencyChecker → PO sign-off.
 
-              After PO approves @RequirementsPipeline output, PO types /resume to continue @Main.
-
-              On resume: read artifacts from .planning/CURRENT.md —
+              After PO /approve, the skill writes artifact paths to .planning/CURRENT.md and
+              returns control here. Read artifacts:
                 requirements file: .vault/concepts/[module]/requirements/[feature].md
                 corner cases:      .vault/concepts/[module]/plans/[feature]-corner-cases.md
                 test plan:         .vault/reference/[module]/spec/[feature]-requirements-test-plan.md
                 spec:              .vault/reference/[module]/spec/[feature].md
-
-   ### Mode B — no requirements pipeline (file absent):
-
-              Proceed with legacy inline requirements mode:
-              a. Call skill `corner-case-refinement`. Produce:
-                 .vault/concepts/[module]/plans/[feature]-corner-cases.md
-              b. Call superpowers:writing-plans to write STRICTLY SEQUENTIALLY:
-                 - .vault/concepts/[module]/requirements/[feature].md → compress() → checkpoint
-                 - .vault/reference/[module]/spec/[feature].md → compress() → checkpoint
-              c. After each file: knowledge-my-app_write_guideline(file)
 
 2. SEARCH  — knowledge-my-app_search_docs on the feature topic in .vault/
               Read every found file in full (existing code patterns, related guidelines).

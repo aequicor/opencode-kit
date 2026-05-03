@@ -9,7 +9,7 @@ Business-level corner case analysis. Runs during the requirements phase — afte
 
 ## Invocation Interface
 
-Called by `@RequirementsPipeline` (Step 2.5) or `@Main` with:
+Called by `@Main` via the `requirements-pipeline` skill (Step 2.5) or directly with:
 
 ```
 Feature: [feature-name, snake_case]

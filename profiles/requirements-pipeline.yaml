@@ -9,13 +9,15 @@
 #   ready for development with only PO sign-off required
 #
 # Agents added by this profile (beyond generic baseline):
-#   @RequirementsPipeline  — orchestrator, entry point via /requirements-pipeline
 #   @BusinessAnalyst       — drafts and updates business requirements
 #   @CornerCaseReviewer    — attacks requirements and tech spec for gaps
 #   @RequirementsQA        — generates test cases from requirements (pre-spec)
 #   @CoverageChecker       — verifies all requirements have test cases
 #   @SystemAnalyst         — generates technical spec from requirements + test cases
 #   @ConsistencyChecker    — verifies spec does not contradict requirements
+#
+# The pipeline is orchestrated by @Main via the requirements-pipeline skill.
+# Entry point: /requirements-pipeline or /new-feature (auto-triggers the pipeline)
 #
 # Workflow:
 #   PO: /requirements-pipeline "description of the feature"
