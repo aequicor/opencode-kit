@@ -47,6 +47,7 @@ from core import (  # noqa: E402
     verify_output,
 )
 from core.context import _build_nested_context  # noqa: E402
+from core.profiles import apply_profiles_to_manifest  # noqa: E402
 
 
 def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> None:
@@ -64,6 +65,8 @@ def apply(manifest_path: str, target_dir: str, dry_run: bool, merge: bool) -> No
 
     with open(manifest_file, encoding="utf-8") as f:
         manifest = yaml.safe_load(f)
+
+    manifest = apply_profiles_to_manifest(manifest)
 
     check_credentials(manifest)
     check_kit_version(manifest)

@@ -1,65 +1,27 @@
-# Profile: Kotlin JVM / Ktor
-# Pre-filled for pure Kotlin/JVM backend services using Ktor.
-# Copy this to my-project.yaml and fill in the project-specific sections.
+# opencode-kit profile: Kotlin JVM / Ktor
+# Usage: add kotlin-jvm-ktor to stack.profiles in your manifest
 
-project:
-  name: "My Ktor Service"
-  description: "Kotlin/JVM Ktor backend service"
+_profile_name: kotlin-jvm-ktor
+_profile_description: "Pure Kotlin/JVM backend services using Ktor, Gradle, detekt, ktlint"
+_profile_category: stack
 
 stack:
   language: kotlin
-  profile: kotlin-jvm-ktor
   build_command: "./gradlew"
   compile_command: "./gradlew compileKotlin"
   lint_command: "./gradlew detekt ktlintCheck"
   test_command: "./gradlew :[module]:test"
-
-modules:
-  - name: api
-    gradle_module: ":api"
-    source_root: "api/src/main/kotlin/com/example/"
-    test_root: "api/src/test/kotlin/com/example/"
-    docs_path: "docs/api/"
-    responsibility: "Ktor routes, request/response handling"
-
-  - name: core
-    gradle_module: ":core"
-    source_root: "core/src/main/kotlin/com/example/"
-    test_root: "core/src/test/kotlin/com/example/"
-    docs_path: "docs/core/"
-    responsibility: "Business logic, domain models, repositories"
-
-provider:
-  name: routerai
-  base_url: https://routerai.ru/api/v1
-  api_key_env: ROUTERAI_OPENCODE
-
-models:
-  default: moonshotai/kimi-k2.6
-  coder: qwen/qwen3-coder-next
-  reviewer: deepseek/deepseek-v4-pro
-  designer: null                          # No UI — Designer agent omitted
-  small: qwen/qwen3-coder-next
-
-mcp:
-  context7:
-    enabled: true
-    api_key_env: CONTEXT7_API_KEY
-  knowledge:
-    enabled: true
-    url: http://localhost:8085/mcp
-  serena:
-    enabled: true
 
 lsp:
   enabled: true
   command: kotlin-lsp
   extensions: [".kt", ".kts"]
 
-ui:
-  framework: null                         # No UI — Designer agent omitted
-  platforms: []
-  colors: []
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]
 
 code_quality:
   forbidden_patterns:
@@ -74,8 +36,11 @@ code_quality:
     - "Raw SQL string concatenation (use parameterized queries)"
     - "Logging tokens, passwords, PII data"
 
-formatter:
-  enabled: true
-  name: "gradle-detekt-format"
-  command: ["./gradlew", "detekt", "--auto-correct"]
-  extensions: [".kt", ".kts"]
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: true

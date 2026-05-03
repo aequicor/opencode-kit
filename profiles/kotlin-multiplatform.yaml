@@ -1,85 +1,27 @@
-# Profile: Kotlin Multiplatform
-# Pre-filled for KMP projects: Compose Desktop + Android + iOS + Ktor backends
-# Copy this to my-project.yaml and fill in the project-specific sections.
+# opencode-kit profile: Kotlin Multiplatform
+# Usage: add kotlin-multiplatform to stack.profiles in your manifest
 
-project:
-  name: "My KMP Project"
-  description: "Kotlin Multiplatform app with Compose UI and Ktor backend"
+_profile_name: kotlin-multiplatform
+_profile_description: "Kotlin Multiplatform with Compose Desktop + Android + iOS + Ktor backends"
+_profile_category: stack
 
 stack:
   language: kotlin
-  profile: kotlin-multiplatform
   build_command: "./gradlew"
   compile_command: "./gradlew compileKotlin"
   lint_command: "./gradlew detekt ktlintCheck"
   test_command: "./gradlew :[module]:test"
-
-# Fill in your actual modules:
-modules:
-  - name: server
-    gradle_module: ":server"
-    source_root: "server/src/main/kotlin/com/example/"
-    test_root: "server/src/test/kotlin/com/example/"
-    docs_path: "docs/server/"
-    responsibility: "Ktor server, API, business logic"
-
-  - name: client
-    gradle_module: ":composeApp"
-    source_root: "composeApp/src/commonMain/kotlin/com/example/"
-    test_root: "composeApp/src/commonTest/kotlin/com/example/"
-    docs_path: "docs/client/"
-    responsibility: "Compose Multiplatform client, UI, session"
-
-  - name: shared
-    gradle_module: ":shared"
-    source_root: "shared/src/commonMain/kotlin/com/example/"
-    test_root: "shared/src/commonTest/kotlin/com/example/"
-    docs_path: "docs/shared/"
-    responsibility: "Shared domain logic, models, utilities"
-
-provider:
-  name: routerai
-  base_url: https://routerai.ru/api/v1
-  api_key_env: ROUTERAI_OPENCODE
-
-models:
-  default: moonshotai/kimi-k2.6
-  coder: qwen/qwen3-coder-next
-  reviewer: deepseek/deepseek-v4-pro
-  designer: openai/gpt-5.4
-  small: qwen/qwen3-coder-next
-
-mcp:
-  context7:
-    enabled: true
-    api_key_env: CONTEXT7_API_KEY
-  knowledge:
-    enabled: true
-    url: http://localhost:8085/mcp
-  serena:
-    enabled: true
 
 lsp:
   enabled: true
   command: kotlin-lsp
   extensions: [".kt", ".kts"]
 
-ui:
-  framework: "Compose Multiplatform"
-  platforms: ["Desktop", "Android", "iOS"]
-  colors:
-    - name: "Primary Background"
-      hex: "#REPLACE_ME"
-      purpose: "Main background color"
-    - name: "Primary Accent"
-      hex: "#REPLACE_ME"
-      purpose: "CTA buttons, highlights"
-    - name: "Primary Text"
-      hex: "#FFFFFF"
-      purpose: "Main text on dark background"
-    - name: "Secondary Text"
-      hex: "#9BA0AB"
-      purpose: "Labels, hints"
+formatter:
+  enabled: true
+  name: "gradle-detekt-format"
+  command: ["./gradlew", "detekt", "--auto-correct"]
+  extensions: [".kt", ".kts"]
 
 code_quality:
   forbidden_patterns:
@@ -94,8 +36,11 @@ code_quality:
     - "Raw SQL string concatenation (use Exposed parameterized queries)"
     - "Logging tokens, passwords, PII data"
 
-formatter:
-  enabled: true
-  name: "gradle-detekt-format"
-  command: ["./gradlew", "detekt", "--auto-correct"]
-  extensions: [".kt", ".kts"]
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: true

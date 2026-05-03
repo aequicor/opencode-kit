@@ -37,7 +37,14 @@
           "type": "string",
           "enum": ["kotlin", "python", "typescript", "go", "rust", "java", "generic"]
         },
-        "profile": {"type": "string"},
+        "profiles": {
+          "type": "array",
+          "description": "List of profile names to merge (left-to-right, manifest wins over merged profiles)",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "profile": {"type": "string", "description": "Legacy single profile name — use profiles[] instead"},
         "build_command": {"type": "string", "minLength": 1},
         "compile_command": {"type": "string", "minLength": 1},
         "lint_command": {"type": "string", "minLength": 1},

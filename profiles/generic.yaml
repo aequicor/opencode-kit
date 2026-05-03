@@ -1,66 +1,28 @@
-# Profile: Generic (language-agnostic baseline)
-# Minimal configuration — suitable for any stack.
-# No LSP, no serena (code navigation), no Designer agent.
-# Fill everything manually for your specific environment.
+# opencode-kit profile: Generic (language-agnostic baseline)
+# Usage: add generic to stack.profiles in your manifest
+# Minimal configuration — no LSP, no serena, no Designer agent.
 
-project:
-  name: "My Project"
-  description: "Project description"
+_profile_name: generic
+_profile_description: "Language-agnostic baseline — no LSP, no serena, no Designer"
+_profile_category: stack
 
 stack:
   language: generic
-  profile: generic
-  build_command: "make"                   # or npm run build, cargo build, etc.
-  compile_command: "make check"           # or tsc --noEmit, mypy ., etc.
-  lint_command: "make lint"               # or eslint ., flake8 ., etc.
-  test_command: "make test"               # or pytest, jest, cargo test, etc.
-
-modules:
-  - name: backend
-    gradle_module: null                   # Not using Gradle
-    source_root: "src/"
-    test_root: "tests/"
-    docs_path: "docs/backend/"
-    responsibility: "Backend API"
-
-  - name: frontend
-    gradle_module: null
-    source_root: "frontend/src/"
-    test_root: "frontend/tests/"
-    docs_path: "docs/frontend/"
-    responsibility: "Frontend UI"
-
-provider:
-  name: routerai
-  base_url: https://routerai.ru/api/v1
-  api_key_env: ROUTERAI_OPENCODE
-
-models:
-  default: moonshotai/kimi-k2.6
-  coder: qwen/qwen3-coder-next
-  reviewer: deepseek/deepseek-v4-pro
-  designer: null                          # null = omit Designer agent
-  small: qwen/qwen3-coder-next
-
-mcp:
-  context7:
-    enabled: true
-    api_key_env: CONTEXT7_API_KEY
-  knowledge:
-    enabled: false                        # Set to true if running KnowledgeOS
-    url: http://localhost:8085/mcp
-  serena:
-    enabled: false                        # serena is JVM/LSP focused — disable for non-JVM
+  build_command: "make"
+  compile_command: "make check"
+  lint_command: "make lint"
+  test_command: "make test"
 
 lsp:
-  enabled: false                          # Set to true with appropriate LSP for your language
+  enabled: false
   command: ""
   extensions: []
 
-ui:
-  framework: null                         # null = omit Designer agent
-  platforms: []
-  colors: []
+formatter:
+  enabled: false
+  name: "default-fmt"
+  command: ["make", "format"]
+  extensions: []
 
 code_quality:
   forbidden_patterns:
@@ -69,8 +31,11 @@ code_quality:
     - "Logging sensitive data (passwords, tokens, PII)"
     - "TODO comments without tracking entry"
 
-formatter:
-  enabled: false                          # Enable and configure for your language
-  name: "default-fmt"
-  command: ["make", "format"]
-  extensions: []
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

@@ -44,6 +44,13 @@ from .plugins import (
     discover_plugins,
     merge_plugin_files,
 )
+from .profiles import (
+    apply_profiles_to_manifest,
+    deep_merge,
+    list_profiles,
+    load_profile,
+    merge_profiles,
+)
 from .prompts import (
     PROMPT_REGISTRY,
     PromptVersion,
@@ -101,6 +108,11 @@ __all__ = [
     "KitPlugin",
     "discover_plugins",
     "merge_plugin_files",
+    "load_profile",
+    "merge_profiles",
+    "deep_merge",
+    "apply_profiles_to_manifest",
+    "list_profiles",
     "EvalCase",
     "EvalResult",
     "EvalSuite",

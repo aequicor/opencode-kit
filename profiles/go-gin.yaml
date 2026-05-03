@@ -3,6 +3,7 @@
 
 _profile_name: go-gin
 _profile_description: "Go 1.22+ with Gin web framework, golangci-lint, and go test"
+_profile_category: stack
 
 stack:
   language: go

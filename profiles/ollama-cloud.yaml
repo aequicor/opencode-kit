@@ -1,33 +1,10 @@
-# Profile: Ollama Cloud
-# Uses Ollama's cloud-hosted LLMs via OpenAI-compatible API.
-# Copy this to my-project.yaml and fill in the project-specific sections.
+# opencode-kit profile: Ollama Cloud
+# Usage: add ollama-cloud to stack.profiles in your manifest
+# Overrides provider and models for Ollama's cloud-hosted LLMs.
 
-project:
-  name: "My Project"
-  description: "Project description"
-
-stack:
-  language: generic
-  profile: ollama-cloud
-  build_command: "make"
-  compile_command: "make check"
-  lint_command: "make lint"
-  test_command: "make test"
-
-modules:
-  - name: backend
-    gradle_module: null
-    source_root: "src/"
-    test_root: "tests/"
-    docs_path: "docs/backend/"
-    responsibility: "Backend API"
-
-  - name: frontend
-    gradle_module: null
-    source_root: "frontend/src/"
-    test_root: "frontend/tests/"
-    docs_path: "docs/frontend/"
-    responsibility: "Frontend UI"
+_profile_name: ollama-cloud
+_profile_description: "Ollama cloud-hosted LLMs via OpenAI-compatible API"
+_profile_category: provider
 
 provider:
   name: ollama-cloud
@@ -35,31 +12,22 @@ provider:
   api_key_env: OLLAMA_CLOUD_API_KEY
 
 models:
-  default: kimi-k2.6                      # Orchestrator (@Main) — best reasoning/SWE
-  coder: qwen3-coder-next                 # @CodeWriter, @BugFixer, @debugger, @QA
-  reviewer: deepseek-v4-pro               # @CodeReviewer, @PromptEngineer
-  designer: null                          # set to a vision model if you have a UI
-  small: deepseek-v4-flash                # Lightweight model for title/summary tasks
-
-mcp:
-  context7:
-    enabled: true
-    api_key_env: CONTEXT7_API_KEY
-  knowledge:
-    enabled: false
-    url: http://localhost:8085/mcp
-  serena:
-    enabled: false
+  default: kimi-k2.6
+  coder: qwen3-coder-next
+  reviewer: deepseek-v4-pro
+  designer: null
+  small: deepseek-v4-flash
 
 lsp:
   enabled: false
   command: ""
   extensions: []
 
-ui:
-  framework: null
-  platforms: []
-  colors: []
+formatter:
+  enabled: false
+  name: "default-fmt"
+  command: ["make", "format"]
+  extensions: []
 
 code_quality:
   forbidden_patterns:
@@ -68,8 +36,11 @@ code_quality:
     - "Logging sensitive data (passwords, tokens, PII)"
     - "TODO comments without tracking entry"
 
-formatter:
-  enabled: false
-  name: "default-fmt"
-  command: ["make", "format"]
-  extensions: []
+mcp:
+  context7:
+    enabled: true
+    api_key_env: CONTEXT7_API_KEY
+  knowledge:
+    enabled: false
+  serena:
+    enabled: false

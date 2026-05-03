@@ -3,6 +3,7 @@
 
 _profile_name: java-spring
 _profile_description: "Java 17+ with Spring Boot 3, Maven, Checkstyle, and JUnit 5"
+_profile_category: stack
 
 stack:
   language: java

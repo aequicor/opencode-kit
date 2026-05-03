@@ -4,6 +4,7 @@
 
 _profile_name: typescript-nextjs
 _profile_description: "TypeScript + Next.js (App Router) with ESLint and Prettier"
+_profile_category: stack
 
 stack:
   language: typescript

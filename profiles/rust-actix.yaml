@@ -3,6 +3,7 @@
 
 _profile_name: rust-actix
 _profile_description: "Rust (stable) + Actix Web with Clippy, rustfmt, and cargo test"
+_profile_category: stack
 
 stack:
   language: rust

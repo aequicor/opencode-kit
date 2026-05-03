@@ -4,6 +4,7 @@
 
 _profile_name: python-fastapi
 _profile_description: "Python 3.11+ / FastAPI with Ruff, mypy, and pytest"
+_profile_category: stack
 
 stack:
   language: python

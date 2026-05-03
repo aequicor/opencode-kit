@@ -32,7 +32,7 @@ curl -sL https://raw.githubusercontent.com/aequicor/opencode-kit/main/scripts/ap
 # Grab a profile for your stack as starting manifest
 curl -sL https://raw.githubusercontent.com/aequicor/opencode-kit/main/profiles/generic.yaml \
   -o my-project.yaml
-# Edit my-project.yaml — fill in project name, modules, provider, models
+# Edit my-project.yaml — fill in project name, modules, profiles, provider, models
 
 # Preview what will be created
 python3 apply_remote.py --manifest my-project.yaml --target /path/to/your/project --dry-run
@@ -133,24 +133,47 @@ Review current changes:
 
 ---
 
-## Choose a profile
+## Choose profiles
 
-Pick the profile closest to your stack when creating your manifest:
+Combine stack and capability profiles in your manifest's `stack.profiles` list.
+Profiles are merged left-to-right; your manifest values always win.
+
+```yaml
+stack:
+  profiles: [kotlin-jvm-ktor, requirements-pipeline]
+  language: kotlin          # from kotlin-jvm-ktor profile (override here if needed)
+  build_command: "./gradlew"
+  # ...
+```
+
+### Stack profiles (pick one)
 
 | Profile | Stack |
 |---|---|
-| `ollama-cloud.yaml` | **Default** — Ollama Cloud LLMs (kimi-k2, qwen3-coder, deepseek-v4) |
-| `generic.yaml` | Any language — fill everything manually |
-| `kotlin-multiplatform.yaml` | KMP — Compose Desktop + Android + iOS + Ktor |
-| `kotlin-jvm-ktor.yaml` | Pure Kotlin/JVM + Ktor backend |
-| `java-spring.yaml` | Java + Spring Boot |
-| `go-gin.yaml` | Go + Gin |
-| `python-fastapi.yaml` | Python + FastAPI |
-| `typescript-nextjs.yaml` | TypeScript + Next.js |
-| `rust-actix.yaml` | Rust + Actix-web |
-| `csharp-aspnet.yaml` | C# + ASP.NET Core |
-| `minecraft-paper-plugin.yaml` | Minecraft Paper plugin (Kotlin/Gradle KTS) |
-| `requirements-pipeline.yaml` | Any language + AI-driven requirements pipeline |
+| `generic` | Any language — fill everything manually |
+| `kotlin-multiplatform` | KMP — Compose Desktop + Android + iOS + Ktor |
+| `kotlin-jvm-ktor` | Pure Kotlin/JVM + Ktor backend |
+| `java-spring` | Java + Spring Boot |
+| `go-gin` | Go + Gin |
+| `python-fastapi` | Python + FastAPI |
+| `typescript-nextjs` | TypeScript + Next.js |
+| `rust-actix` | Rust + Actix-web |
+| `csharp-aspnet` | C# + ASP.NET Core |
+| `minecraft-paper-plugin` | Minecraft Paper plugin (Kotlin/Gradle KTS) |
+
+### Provider profiles (pick one)
+
+| Profile | Provider |
+|---|---|
+| `ollama-cloud` | Ollama Cloud LLMs (kimi-k2, qwen3-coder, deepseek-v4) |
+
+### Capability profiles (add any)
+
+| Profile | Adds |
+|---|---|
+| `requirements-pipeline` | AI-driven requirements pipeline: BA → CCR → QA → SA → Consistency |
+
+> **Backward compatible:** `stack.profile: kotlin-jvm-ktor` (single string) still works.
 
 ---
 
@@ -217,7 +240,7 @@ Do not skip steps. Do not guess values.
 
 ## Extending
 
-**Add a profile** — copy `profiles/generic.yaml`, fill in your stack's commands and rules.
+**Add a profile** — copy `profiles/generic.yaml`, fill in your stack's commands and rules. Add `_profile_name`, `_profile_description`, and `_profile_category: stack|provider|capability` metadata fields.
 
 **Add a skill** — copy `kit/.opencode/skills/look-up/SKILL.md` into `kit/.opencode/skills/your-skill/SKILL.md`.
 

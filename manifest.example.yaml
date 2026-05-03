@@ -5,7 +5,7 @@
 # ─────────────────────────────────────────────
 # KIT VERSION (do not change — used for migration checks)
 # ─────────────────────────────────────────────
-kit_version: "1.4.0"
+kit_version: "1.5.0"
 
 # ─────────────────────────────────────────────
 # EDITORS
@@ -28,12 +28,14 @@ project:
 # ─────────────────────────────────────────────
 stack:
   language: kotlin                        # kotlin | python | typescript | go | generic
-  profile: kotlin-multiplatform           # which profile from profiles/ to use as base
-                                          # kotlin-multiplatform | kotlin-jvm-ktor | java-spring | go-gin
-                                          # python-fastapi | typescript-nextjs | rust-actix | csharp-aspnet
-                                          # minecraft-paper-plugin | ollama-cloud
-                                          # requirements-pipeline (adds 7-agent AI requirements pipeline)
-                                          # generic (minimal, fill everything manually)
+  profiles: [kotlin-multiplatform]       # stack + capability profiles merged left-to-right
+                                           # Stack:      kotlin-multiplatform | kotlin-jvm-ktor | java-spring | go-gin
+                                           #             python-fastapi | typescript-nextjs | rust-actix | csharp-aspnet
+                                           #             minecraft-paper-plugin | generic
+                                           # Provider:   ollama-cloud
+                                           # Capability:  requirements-pipeline (adds AI requirements pipeline)
+                                           # Legacy: use profile: kotlin-multiplatform (string) instead of profiles[]
+                                           # Values in this file override profile defaults
 
   # Build commands — used in AGENTS.md and agent prompts
   build_command: "./gradlew"              # The root build command

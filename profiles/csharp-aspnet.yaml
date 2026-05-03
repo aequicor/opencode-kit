@@ -3,6 +3,7 @@
 
 _profile_name: csharp-aspnet
 _profile_description: "C# (.NET 8) + ASP.NET Core with dotnet CLI, analyzers, and xUnit"
+_profile_category: stack
 
 stack:
   language: csharp
