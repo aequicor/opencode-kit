@@ -34,6 +34,12 @@ Does NOT write code. Does NOT make architectural decisions beyond what requireme
 Input: requirements file path + corner cases register path + test plan file path.
 
 ```
+0. THINK — before writing, reason briefly:
+           - What data models and APIs do the requirements imply?
+           - Which Critical/High corner cases need explicit handling?
+           - What could go wrong if I miss a dependency?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. SEARCH  — knowledge-my-app_search_docs for existing specs, data models, and API contracts
              related to this feature or its dependencies.
              Read every found document in full.
@@ -89,6 +95,11 @@ Input: spec file path + questions list. The questions list comes from one of two
 Handle both sources identically: treat every row as an open question that must be resolved in the spec.
 
 ```
+0. THINK — before updating, reason briefly:
+           - What does each question actually require: new field? New error code? Clarification?
+           - Will the resolution conflict with existing spec sections?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. READ    — spec file in full.
              Questions list (from Source A or Source B — treat identically).
 
@@ -118,6 +129,24 @@ Handle both sources identically: treat every row as an open question that must b
 
 ---
 
+## RAG Pagination
+
+When calling `knowledge-my-app_search_docs`:
+- Read at most **3 documents** per query.
+- For each document, read at most **500 lines** (use offset/limit).
+- If a document exceeds 500 lines, read the relevant section first, then expand only if needed.
+- Never dump the entire vault into context.
+
+## Anti-Loop
+
+| Symptom | Action |
+|---------|--------|
+| Same doc read 2 times with no new findings | STOP. Proceed to next step with what you have. |
+| Reasoning without new output > 2 steps | STOP. Output current conclusion and return. |
+| Unresolved items growing instead of shrinking after UPDATE | STOP after 3rd UPDATE attempt. Return all remaining as UNRESOLVED. |
+
+**Max 3 UPDATE cycles per spec** — then escalate unresolved items to caller.
+
 ## Quality Rules
 
 - **Every Critical corner case MUST have a corresponding Edge Cases row** with explicit handling behavior.
@@ -133,3 +162,4 @@ Handle both sources identically: treat every row as an open question that must b
 - DO NOT skip Critical corner cases in the Edge Cases table.
 - DO NOT write code or pseudocode.
 - DO NOT output system tags or environment artifacts.
+- DO NOT add conversational filler — no "Sure!", "Of course", "Here is...", apologies, or summaries before/after the structured output. Output ONLY the structured result.

@@ -1,3 +1,9 @@
+# Tool categories (5 specialized domains, per AgentRequirements):
+# 1. Code ops: bash, edit, lsp, serena_*
+# 2. Knowledge/RAG: knowledge-my-app_*
+# 3. Library lookup: context7_*, webfetch
+# 4. Discovery: read, grep, glob
+# 5. Meta: skill, task
 ---
 description: Bug Fixer — defect analysis (stacktrace / description), fix, regression test, report in .vault/guidelines/[module]/reports
 mode: all
@@ -12,7 +18,6 @@ permission:
   glob: allow
   lsp: allow
   skill: allow
-  todowrite: allow
   task: allow
   webfetch: allow
   "knowledge-my-app_*": allow
@@ -43,9 +48,22 @@ Analyze and eliminate a defect; write a regression test; report. **Do not run re
 
 **Max 2 attempts per error — then STOP and escalate.**
 
+## RAG Pagination
+
+When calling `knowledge-my-app_search_docs`:
+- Read at most **3 documents** per query.
+- For each document, read at most **500 lines** (use offset/limit).
+- Never dump the entire vault into context.
+
 ## Pipeline
 
 ```
+0. THINK — before acting, reason briefly:
+           - What type of bug is this (null/race/IO/logic)?
+           - What's the most likely root cause from the stacktrace?
+           - What existing patterns should guide the fix?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. RECEIVE bug-report (stacktrace, description, error report id).
 2. ANALYZE root cause — read code from stacktrace, trace call chain.
 3. REPRODUCE — write failing test demonstrating the bug.
@@ -227,3 +245,4 @@ After saving — `knowledge-my-app_write_guideline`.
 - DO NOT guess API — vault → context7 → webfetch or escalate.
 - DO NOT leave TODO() / empty stubs — implement or escalate.
 - DO NOT output system tags.
+- DO NOT add conversational filler — no "Sure!", "Of course", "Here is...", apologies, or summaries before/after the structured output. Output ONLY the structured result.

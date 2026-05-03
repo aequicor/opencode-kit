@@ -49,6 +49,12 @@ Test files mirror `src/main/` structure:
 Called after creating spec and requirements, before implementation.
 
 ```
+0. THINK — before writing the test plan, reason briefly:
+           - What are the highest-risk scenarios?
+           - Which components are hardest to test in isolation?
+           - Are there external dependencies that need mocking?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. READ  — spec file (.vault/reference/[module]/spec/[feature].md)
            requirements file (.vault/concepts/[module]/requirements/[feature].md)
            If missing → report in output and finish.
@@ -72,6 +78,11 @@ Called after creating spec and requirements, before implementation.
 Called after all implementation stages are complete.
 
 ```
+0. THINK — before finalizing, reason briefly:
+           - Which planned tests might still be unwritten?
+           - Are there new test files @CodeWriter created beyond the plan?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. READ  — draft test-plan (.vault/reference/[module]/spec/[feature]-test-plan.md).
 2. FIND  — glob test files for the module.
            Read each file, find test classes and methods related to the feature.
@@ -90,6 +101,15 @@ Called after all implementation stages are complete.
            Integration: N written / M planned (+ list of ⚠️ if any)
            Manual: N scenarios
 ```
+
+## Anti-Loop
+
+| Symptom | Action |
+|---------|--------|
+| Reasoning without output > 2 steps | STOP. Output current test plan state. |
+| FINAL mode: test file not found after 3 glob attempts | STOP. Mark as ⚠️ NOT IMPLEMENTED, complete the plan. |
+
+**Max 1 DRAFT + 1 FINAL cycle** per feature — no re-drafting.
 
 ## Test plan document format
 
@@ -120,6 +140,14 @@ What is and is not in scope for testing.
 | 1 | Successful login | 1. Open app 2. Enter credentials... | Profile screen opens | ⬜ |
 ```
 
+## RAG Pagination
+
+When calling `knowledge-my-app_search_docs`:
+- Read at most **3 documents** per query.
+- For each document, read at most **500 lines** (use offset/limit).
+- If a document exceeds 500 lines, read the relevant section first, then expand only if needed.
+- Never dump the entire vault into context.
+
 ## What NOT to do
 
 - **DO NOT write test code** — only the plan document.
@@ -127,3 +155,4 @@ What is and is not in scope for testing.
 - **DO NOT skip** Manual Scenarios — they are mandatory.
 - **DO NOT use** technical jargon in Manual steps — write for PO.
 - **DO NOT output** system tags.
+- **DO NOT add conversational filler** — no "Sure!", "Of course", "Here is...", apologies, or summaries before/after the structured output. Output ONLY the structured result.

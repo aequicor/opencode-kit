@@ -34,6 +34,12 @@ Does NOT write test code. Does NOT read technical spec (it doesn't exist yet at 
 Input: requirements file path + corner cases register path.
 
 ```
+0. THINK — before generating, reason briefly:
+           - Which User Stories carry the highest risk?
+           - Which Critical/High corner cases are hardest to test?
+           - Are there acceptance criteria that overlap or contradict?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. READ    — requirements file in full.
              Corner cases register in full.
              Note: all User Stories, Acceptance Criteria, and corner cases (Critical + High mandatory).
@@ -93,6 +99,11 @@ Input: requirements file path + corner cases register path.
 Input: test plan file path + gaps list from @CoverageChecker.
 
 ```
+0. THINK — before fixing, reason briefly:
+           - Which gaps are Critical vs nice-to-have?
+           - Could adding a test case invalidate an existing one?
+   Record 2-3 key conclusions. Do NOT skip this step.
+
 1. READ    — test plan file in full.
              Gaps list from @CoverageChecker.
 
@@ -117,6 +128,23 @@ Input: test plan file path + gaps list from @CoverageChecker.
 
 ---
 
+## RAG Pagination
+
+When calling `knowledge-my-app_search_docs`:
+- Read at most **3 documents** per query.
+- For each document, read at most **500 lines** (use offset/limit).
+- If a document exceeds 500 lines, read the relevant section first, then expand only if needed.
+- Never dump the entire vault into context.
+
+## Anti-Loop
+
+| Symptom | Action |
+|---------|--------|
+| Same gap reported 2 times after FIX | STOP. Return remaining gaps as "cannot resolve". |
+| Reasoning without new output > 2 steps | STOP. Output current state and return. |
+
+**Max 2 FIX cycles per test plan** — then escalate remaining gaps to caller.
+
 ## Quality Rules
 
 - **Every Acceptance Criterion MUST have at least one test case.**
@@ -131,3 +159,4 @@ Input: test plan file path + gaps list from @CoverageChecker.
 - DO NOT read or reference technical spec (it doesn't exist at this phase).
 - DO NOT skip corner cases from the register.
 - DO NOT output system tags or environment artifacts.
+- DO NOT add conversational filler — no "Sure!", "Of course", "Here is...", apologies, or summaries before/after the structured output. Output ONLY the structured result.
