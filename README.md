@@ -65,14 +65,24 @@ python3 scripts/apply.py --manifest my-project.yaml --target /path/to/your/proje
 ```yaml
 # my-project.yaml
 provider:
-  api_key_env: ROUTERAI_OPENCODE   # the env var name, not the key
+  name: ollama-cloud
+  base_url: https://api.ollama.com/v1
+  api_key_env: OLLAMA_CLOUD_API_KEY   # the env var name, not the key
 ```
 
 Add to your shell profile (or CI secrets):
 
 ```bash
-export ROUTERAI_OPENCODE=sk-...
+# Ollama Cloud (default)
+export OLLAMA_CLOUD_API_KEY=sk-...
 export CONTEXT7_API_KEY=ctx-...
+```
+
+Other providers use a different env var name — just set `api_key_env` to whatever name you choose:
+
+```bash
+# RouterAI / OpenRouter
+export ROUTERAI_OPENCODE=sk-...
 ```
 
 ---
@@ -125,6 +135,8 @@ Pick the profile closest to your stack when creating your manifest:
 
 | Profile | Stack |
 |---|---|
+| `ollama-cloud.yaml` | **Default** — Ollama Cloud LLMs (kimi-k2, qwen3-coder, deepseek-v4) |
+| `generic.yaml` | Any language — fill everything manually |
 | `kotlin-multiplatform.yaml` | KMP — Compose Desktop + Android + iOS + Ktor |
 | `kotlin-jvm-ktor.yaml` | Pure Kotlin/JVM + Ktor backend |
 | `java-spring.yaml` | Java + Spring Boot |
@@ -134,9 +146,7 @@ Pick the profile closest to your stack when creating your manifest:
 | `rust-actix.yaml` | Rust + Actix-web |
 | `csharp-aspnet.yaml` | C# + ASP.NET Core |
 | `minecraft-paper-plugin.yaml` | Minecraft Paper plugin (Kotlin/Gradle KTS) |
-| `ollama-cloud.yaml` | Ollama cloud-hosted LLMs |
 | `requirements-pipeline.yaml` | Any language + AI-driven requirements pipeline |
-| `generic.yaml` | Any language — fill everything manually |
 
 ---
 
