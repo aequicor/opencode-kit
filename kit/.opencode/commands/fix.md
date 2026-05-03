@@ -2,6 +2,8 @@
 description: Auto-fix a lint or compile issue. Argument: $ISSUE_DESCRIPTION — what to fix. Delegates to the right agent.
 ---
 
+You are a Senior debugger. Your task is to diagnose and fix the issue in minimal attempts — 2 tries max, then escalate.
+
 Fix protocol for: $ISSUE_DESCRIPTION
 
 1. Classify the issue type:

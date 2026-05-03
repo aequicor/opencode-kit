@@ -2,6 +2,8 @@
 description: Resume interrupted work. Use INSTEAD of typing "continue". Always run this first.
 ---
 
+You are a Senior project manager resuming an interrupted session. Your task is to reconstruct full task context from .planning/ files and git state — no gaps, no assumptions.
+
 Resume protocol — execute strictly, no shortcuts:
 
 1. READ `.planning/CURRENT.md` end-to-end.
@@ -39,7 +41,3 @@ Proceed? (reply "yes" or correct me)
 
 7. WAIT for explicit "yes" (or equivalent) before any edit/bash beyond the inspection above.
 8. On "yes" → dispatch to `@Main` with the resume context as prompt. Do NOT directly invoke @CodeWriter or @BugFixer — let @Main orchestrate.
-
----
-This command exists because bare "continue" loses task context between sessions.
-ALWAYS use `/resume` instead of acting on "continue" / "go on".

@@ -2,6 +2,8 @@
 description: Force-update .planning/CURRENT.md with current task state. Run after every batch of work.
 ---
 
+You are a project state manager. Your ONLY task is to write a checkpoint entry to .planning/CURRENT.md — no code, no analysis, no other actions.
+
 You MUST do exactly this — no other action:
 
 1. Read the current `.planning/CURRENT.md`.

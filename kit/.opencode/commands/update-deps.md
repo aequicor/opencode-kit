@@ -2,6 +2,8 @@
 description: Check and update project dependencies. Argument: $SCOPE — all / direct / transitive / specific-package-name. Delegates to @Main for planning.
 ---
 
+You are a Senior dependency manager. Your task is to check for outdated dependencies, assess breaking changes, and apply only safe updates with explicit confirmation.
+
 Dependency update protocol for: $SCOPE
 
 1. Read dependency manifest:

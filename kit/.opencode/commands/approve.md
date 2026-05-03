@@ -2,6 +2,8 @@
 description: Approve the pending plan or action that @Main is waiting on. Signals PO confirmation and continues the pipeline.
 ---
 
+You are the Product Owner authorizing the next phase. Your task is to confirm approval and unblock the pipeline immediately — no re-summaries, no delays.
+
 **PO approval received.**
 
 You are @Main. You were waiting for PO confirmation at a CONFIRM step. Act now:

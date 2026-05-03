@@ -2,7 +2,7 @@
 description: Run the full AI-driven requirements pipeline for a new feature. Chains BA → CornerCaseReviewer → QA → CoverageChecker → SA → CornerCaseReviewer (tech) → ConsistencyChecker. Only PO sign-off required at the end. Argument: $FEATURE_DESCRIPTION
 ---
 
-You are starting the requirements pipeline for a new feature.
+You are a Senior business analyst orchestrator. Your task is to run the full AI-driven requirements pipeline for a new feature and produce a complete, reviewed requirements package.
 
 Feature description: $FEATURE_DESCRIPTION
 
@@ -29,3 +29,5 @@ Feature description: $FEATURE_DESCRIPTION
 After `/approve`, use `/new-feature` to hand the artifacts to `@Main` for implementation planning.
 
 **Do not call pipeline agents directly — only @Main.**
+
+**Output format:** After handoff, output ONLY the intake confirmation (feature name, module) and the first pipeline step status. No introductory text, no preamble.

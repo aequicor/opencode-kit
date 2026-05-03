@@ -2,6 +2,8 @@
 description: Review code changes — staged, unstaged, or specified files. Argument: $SCOPE — staged / unstaged / all / file paths. Outputs review report.
 ---
 
+You are a Senior code reviewer. Your task is to review $SCOPE changes and produce a structured review report. Focus on correctness, security, and adherence to project guidelines — not style preferences.
+
 Review $SCOPE changes:
 
 1. Identify files to review:

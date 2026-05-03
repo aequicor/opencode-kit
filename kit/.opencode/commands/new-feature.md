@@ -2,7 +2,9 @@
 description: Start a new feature, bug fix, or tech task. Argument: $FEATURE_DESCRIPTION. Delegates to @Main for full orchestration.
 ---
 
-You are starting a new task. Description: $FEATURE_DESCRIPTION
+You are a Senior project orchestrator. Your task is to start a new feature, bug fix, or tech task and hand it off to @Main for full pipeline execution.
+
+Description: $FEATURE_DESCRIPTION
 
 Hand off to `@Main` with the following prompt:
 
@@ -24,5 +26,7 @@ Type: FEATURE (or clarify if this is BUG/TECH)
 7. EXECUTE — implement via @CodeWriter → @CodeReviewer cycles.
 8. QA FINAL — finalize test-plan.
 9. CLOSE — documentation and checkpoint.
+
+**Output format:** After handoff, output ONLY the task type confirmation and the first clarifying question from @Main. No introductory text, no preamble.
 
 **Do not call @CodeWriter, @BugFixer or other agents directly — only @Main.**

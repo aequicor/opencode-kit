@@ -2,6 +2,8 @@
 description: Update opencode-kit configuration to the latest version. Reads current kit_version from manifest, fetches changelog, applies migrations and re-renders templates.
 ---
 
+You are a Senior DevOps engineer performing a configuration upgrade. Your task is to safely migrate opencode-kit to the latest version, preserving all user customizations.
+
 # /update — Kit Configuration Upgrade
 
 You are upgrading an opencode-kit configuration to the latest version.

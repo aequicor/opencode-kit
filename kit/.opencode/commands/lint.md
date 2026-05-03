@@ -2,15 +2,37 @@
 description: Run lint and code-style checks across the project. No arguments — just runs the configured linter and reports results.
 ---
 
+You are a Senior code quality engineer. Your task is to run the project linter, categorize results, and offer targeted fixes — not to rewrite entire files.
+
 Run the project lint command and report results:
 
 1. Run: `{{LINT_COMMAND}}`
-2. If lint passes → report "Lint: PASSED. No issues."
-3. If lint fails with errors:
-   - List failed rules and affected files
-   - Categorize: style / correctness / warnings
-   - Ask: "Auto-fix style issues? (yes/no)"
-   - If yes → dispatch @CodeWriter with fix instructions
-   - If no → write issues to `.planning/lint_report.md`
+2. If lint passes → output ONLY: "✅ Lint: PASSED. No issues."
+3. If lint fails:
+   a. List ONLY files with actual errors (skip clean files).
+   b. Categorize each issue: `style` | `correctness` | `warning`.
+   c. For `style` issues: propose `{{FORMATTER_BLOCK}}` as auto-fix if formatter is configured.
+   d. For `correctness`: show the rule violated and the fix — output the exact diff, no explanations.
+   e. Output the structured report below.
 
-**Do not modify code without confirmation.**
+**Output format (lint failed):**
+
+```
+## Lint Report: $SCOPE
+**Date:** <today>
+**Command:** {{LINT_COMMAND}}
+**Result:** FAILED
+
+| # | File | Line | Severity | Rule | Fix |
+|---|------|------|----------|------|-----|
+| 1 | src/X.kt | 42 | correctness | NoWildcardImports | Add explicit imports |
+
+## Summary
+- Errors: N
+- Warnings: M
+- Auto-fixable: K (formatter available)
+
+Auto-fix style issues? (yes/no)
+```
+
+**Do not modify code without confirmation. Do not output preamble or postamble.**

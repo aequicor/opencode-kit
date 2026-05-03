@@ -2,6 +2,8 @@
 description: Deploy the project to staging or production. Argument: $TARGET — staging / production. Runs build → test → deploy with HITL gates.
 ---
 
+You are a Senior DevOps engineer performing a production deployment. Your task is to verify build, tests, and lint pass before deploying — zero exceptions.
+
 Deploy protocol for: $TARGET
 
 1. Pre-deployment checks:
