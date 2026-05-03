@@ -111,8 +111,14 @@ class TestApplyProfilesToManifest:
                 "profiles": ["kotlin-jvm-ktor"],
                 "language": "override",
             },
-            "modules": [{"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/"}],
-            "provider": {"name": "test", "base_url": "https://api.test.com", "api_key_env": "TEST_KEY"},
+            "modules": [
+                {"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/"}
+            ],
+            "provider": {
+                "name": "test",
+                "base_url": "https://api.test.com",
+                "api_key_env": "TEST_KEY",
+            },
             "models": {"default": "m1", "coder": "m2", "reviewer": "m3"},
         }
         result = apply_profiles_to_manifest(manifest, profiles_dir)
@@ -126,8 +132,14 @@ class TestApplyProfilesToManifest:
             "stack": {
                 "profile": "python-fastapi",
             },
-            "modules": [{"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/"}],
-            "provider": {"name": "test", "base_url": "https://api.test.com", "api_key_env": "TEST_KEY"},
+            "modules": [
+                {"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/"}
+            ],
+            "provider": {
+                "name": "test",
+                "base_url": "https://api.test.com",
+                "api_key_env": "TEST_KEY",
+            },
             "models": {"default": "m1", "coder": "m2", "reviewer": "m3"},
         }
         result = apply_profiles_to_manifest(manifest, profiles_dir)
@@ -142,8 +154,14 @@ class TestApplyProfilesToManifest:
                 "profiles": ["generic"],
                 "lint_command": "my-custom-lint",
             },
-            "modules": [{"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/"}],
-            "provider": {"name": "test", "base_url": "https://api.test.com", "api_key_env": "TEST_KEY"},
+            "modules": [
+                {"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/"}
+            ],
+            "provider": {
+                "name": "test",
+                "base_url": "https://api.test.com",
+                "api_key_env": "TEST_KEY",
+            },
             "models": {"default": "m1", "coder": "m2", "reviewer": "m3"},
         }
         result = apply_profiles_to_manifest(manifest, profiles_dir)

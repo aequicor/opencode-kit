@@ -36,17 +36,9 @@ def load_profile(name: str, profiles_dir: Optional[Path] = None) -> dict:
 def deep_merge(base: dict, override: dict) -> dict:
     result = copy.deepcopy(base)
     for key, value in override.items():
-        if (
-            key in result
-            and isinstance(result[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = deep_merge(result[key], value)
-        elif (
-            key in result
-            and isinstance(result[key], list)
-            and isinstance(value, list)
-        ):
+        elif key in result and isinstance(result[key], list) and isinstance(value, list):
             merged = list(result[key])
             for item in value:
                 if item not in merged:
@@ -104,12 +96,14 @@ def list_profiles(profiles_dir: Optional[Path] = None) -> list[dict]:
                 data = yaml.safe_load(f)
             if not data or not isinstance(data, dict):
                 continue
-            profiles.append({
-                "name": data.get("_profile_name", yaml_file.stem),
-                "description": data.get("_profile_description", ""),
-                "category": data.get("_profile_category", "stack"),
-                "file": str(yaml_file),
-            })
+            profiles.append(
+                {
+                    "name": data.get("_profile_name", yaml_file.stem),
+                    "description": data.get("_profile_description", ""),
+                    "category": data.get("_profile_category", "stack"),
+                    "file": str(yaml_file),
+                }
+            )
         except Exception:
             continue
     return profiles
