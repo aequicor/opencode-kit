@@ -172,6 +172,7 @@ PO ─► @Main (single entry point)
         ├─► @debugger      (reproduction + root cause, read-only)
         ├─► @Designer      (UI/UX design)
         ├─► @QA            (draft/final implementation test plan)
+        ├─► @TestRunner    (generate test cases, guided execution, defect logging, transactional updates)
         ├─► @AutoApprover  (automated plan gatekeeper — at CONFIRM step when AUTO_APPROVE=true)
         └─► @PromptEngineer (agent prompt maintenance)
 ```
@@ -241,6 +242,7 @@ In both flows, `@Main` does **not** modify requirements, corner cases, or spec f
 | `.vault/concepts/<module>/requirements/` | @Main, @BusinessAnalyst | all |
 | `.vault/concepts/<module>/plans/` | @Main, @BusinessAnalyst, corner-case-refinement skill | all |
 | `.vault/reference/<module>/spec/` | @Main, @CodeWriter, @QA, @RequirementsQA, @SystemAnalyst | all |
+| `.vault/reference/<module>/test-cases/` | @Main, @TestRunner | all |
 | `.vault/how-to/<module>/plans/` | @Main | all |
 | `.vault/guidelines/<module>/` | @Main, @Designer, @CodeWriter | all |
 | `.vault/guidelines/<module>/reports/` | @BugFixer | all |
@@ -268,6 +270,7 @@ KnowledgeOS tools use a **hyphen** in `my-app`, not underscore:
 **Built-in skills:**
 - `corner-case-refinement` — business-level corner case analysis. Runs BEFORE spec is written, during business requirements phase. Scans 6 categories: input integrity, process integrity, domain invariants, external dependency failures, scale/capacity, temporal/concurrency. Produces corner case register at `.vault/concepts/<module>/plans/<feature>-corner-cases.md`. Critical items become mandatory test tasks.
 - `code-review-checklist` — pre-commit systematic review checklist.
+- `test-execution` — AI-driven test execution and defect management. Generates test cases from spec/requirements, provides structured template for manual testing with defect logging, and supports transactional updates (re-run after fixes, add new test cases when defects reveal edge cases).
 - `bug-retro` — post-bug root cause analysis and prevention.
 - `knowledge-graph` — semantic document indexing and cross-reference.
 - `look-up` — proactive external API documentation lookup.

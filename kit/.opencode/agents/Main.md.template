@@ -190,6 +190,14 @@ After receiving answers from PO:
 
 7a. QA FINAL — after last stage: dispatch @QA (FINAL mode).
 
+7b. TEST CASES — dispatch @TestRunner (GENERATE mode):
+               Creates .vault/reference/[module]/test-cases/[feature]-test-cases.md.
+               After generation, ask PO if they want to start manual test walkthrough.
+               If PO agrees → dispatch @TestRunner (EXECUTE mode) for guided walkthrough.
+               If defects found → dispatch @BugFixer for each defect.
+               After fixes → dispatch @TestRunner (RERUN mode) to verify.
+               Max 3 RERUN cycles per feature, then escalate if defects remain.
+
 8. CLOSE   — close gaps in guidelines/documentation. If new library — guideline in .vault/guidelines/[module]/.
              CHECKPOINT: .planning/CURRENT.md (DONE: feature complete, NEXT: none).
 ```

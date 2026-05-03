@@ -33,9 +33,10 @@
     plans/<feature>-plan.md
     plans/<feature>-corner-cases.md   ← corner case register (@Main, corner-case-refinement)
 
-  reference/<module>/                ← WHAT EXISTS — specs, schemas, test plans
-    spec/<feature>.md
-    spec/<feature>-test-plan.md      ← Draft/Final (@QA)
+   reference/<module>/                ← WHAT EXISTS — specs, schemas, test plans, test cases
+     spec/<feature>.md
+     spec/<feature>-test-plan.md      ← Draft/Final (@QA)
+     test-cases/<feature>-test-cases.md ← Test cases with defect tracking (@TestRunner)
 
   how-to/<module>/                   ← HOW TO implement
     plans/<feature>-stage-NN.md      ← stage files (@Main → @CodeWriter)
@@ -61,6 +62,7 @@
 |------|-------|---------|
 | `.vault/guidelines/libs/<lib>-<version>.md` | @CodeWriter, @BugFixer | External library documentation cache |
 | `.vault/_templates/test-plan.md` | (template) | Template for @QA |
+| `.vault/_templates/test-cases.md` | (template) | Template for @TestRunner |
 | `.vault/_templates/bug-report.md` | (template) | Template for @BugFixer |
 | `.vault/_templates/spec.md` | (template) | Template for @Main |
 | `.vault/_templates/requirements.md` | (template) | Template for @Main |

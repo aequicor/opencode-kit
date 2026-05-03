@@ -189,6 +189,7 @@ stack:
 | `@BugFixer` | Root cause analysis + fix + regression test |
 | `@debugger` | Read-only investigation, produces a failing test |
 | `@QA` | Generates implementation test plan (Draft then Final) |
+| `@TestRunner` | Generates test cases, guides manual execution, logs defects, manages transactional updates |
 | `@Designer` | UI/UX description for visual features (read-only) |
 | `@PromptEngineer` | Maintains and improves agent prompts and skills |
 | `@AutoApprover` | Automated plan gatekeeper when `AUTO_APPROVE=true` |
