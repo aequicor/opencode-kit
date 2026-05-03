@@ -35,7 +35,7 @@ from core.version import KIT_VERSION
 # ─────────────────────────────────────────────
 
 MINIMAL_MANIFEST = {
-    "kit_version": "1.3.0",
+    "kit_version": "1.4.0",
     "editors": ["opencode"],
     "project": {"name": "Test Project", "description": "A test project"},
     "stack": {
