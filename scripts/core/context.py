@@ -97,9 +97,7 @@ def _build_module_table(modules: list) -> str:
         docs = m.get("docs_path", f".vault/{m['name']}/")
         if not docs.endswith("/"):
             docs += "/"
-        rows.append(
-            f"| `{m['name']}` | `{gradle}` | `{docs}` | {m.get('responsibility', '')} |"
-        )
+        rows.append(f"| `{m['name']}` | `{gradle}` | `{docs}` | {m.get('responsibility', '')} |")
     return header + separator + "\n".join(rows)
 
 

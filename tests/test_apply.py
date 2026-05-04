@@ -582,7 +582,9 @@ def test_create_docs_scaffold_creates_dirs(tmp_path):
 
 
 def test_create_docs_scaffold_uses_docs_path(tmp_path):
-    modules = [{"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/app/"}]
+    modules = [
+        {"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/app/"}
+    ]
     created = create_docs_scaffold(modules, tmp_path, dry_run=False)
     assert len(created) > 0
     assert (tmp_path / "docs/app/concepts/app/requirements/.gitkeep").exists()
