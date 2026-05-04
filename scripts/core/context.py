@@ -94,8 +94,11 @@ def _build_module_table(modules: list) -> str:
     rows = []
     for m in modules:
         gradle = m.get("gradle_module") or "\u2014"
+        docs = m.get("docs_path", f".vault/{m['name']}/")
+        if not docs.endswith("/"):
+            docs += "/"
         rows.append(
-            f"| `{m['name']}` | `{gradle}` | `.vault/{m['name']}/` | {m.get('responsibility', '')} |"
+            f"| `{m['name']}` | `{gradle}` | `{docs}` | {m.get('responsibility', '')} |"
         )
     return header + separator + "\n".join(rows)
 
@@ -186,7 +189,13 @@ def _build_lsp_block(lsp: dict) -> str:
 
 
 def _build_module_docs_list(modules: list) -> str:
-    return "\n".join(f"- `.vault/{m['name']}/`" for m in modules)
+    lines = []
+    for m in modules:
+        docs = m.get("docs_path", f".vault/{m['name']}/")
+        if not docs.endswith("/"):
+            docs += "/"
+        lines.append(f"- `{docs}`")
+    return "\n".join(lines)
 
 
 def _build_module_names_list(modules: list) -> str:
@@ -300,7 +309,7 @@ def _build_nested_context(module: dict, stack: dict, project_name: str) -> dict:
             "conventions", "(use project-default conventions from root AGENTS.md)"
         ),
         "MODULE_DEPENDENCIES": _build_module_dependency_list([module]),
-        "MODULE_DOCS_PATH": f".vault/{module.get('name', '')}/",
+        "MODULE_DOCS_PATH": module.get("docs_path", f".vault/{module.get('name', '')}/"),
     }
 
 

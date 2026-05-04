@@ -165,16 +165,17 @@ def test_full_apply_all_files_present(tmp_path):
     assert (target_dir / ".opencode" / "skills" / "look-up" / "SKILL.md").exists()
     assert (target_dir / ".opencode" / "skills" / "bug-retro" / "SKILL.md").exists()
 
-    # Vault scaffold
-    vault_base = target_dir / ".vault"
-    assert (vault_base / "concepts" / "server" / "requirements" / ".gitkeep").exists()
-    assert (vault_base / "concepts" / "server" / "plans" / ".gitkeep").exists()
-    assert (vault_base / "reference" / "server" / "spec" / ".gitkeep").exists()
-    assert (vault_base / "how-to" / "server" / "plans" / ".gitkeep").exists()
-    assert (vault_base / "guidelines" / "server" / "reports" / ".gitkeep").exists()
-    assert (vault_base / "tutorials" / "server" / "documentation" / ".gitkeep").exists()
-    assert (vault_base / "guidelines" / "libs" / ".gitkeep").exists()
-    assert (vault_base / "concepts" / "client" / "requirements" / ".gitkeep").exists()
+    # Docs scaffold (uses docs_path from manifest, not hardcoded .vault)
+    server_docs = target_dir / "docs" / "server"
+    client_docs = target_dir / "docs" / "client"
+    assert (server_docs / "concepts" / "server" / "requirements" / ".gitkeep").exists()
+    assert (server_docs / "concepts" / "server" / "plans" / ".gitkeep").exists()
+    assert (server_docs / "reference" / "server" / "spec" / ".gitkeep").exists()
+    assert (server_docs / "how-to" / "server" / "plans" / ".gitkeep").exists()
+    assert (server_docs / "guidelines" / "server" / "reports" / ".gitkeep").exists()
+    assert (server_docs / "tutorials" / "server" / "documentation" / ".gitkeep").exists()
+    assert (server_docs / "guidelines" / "libs" / ".gitkeep").exists()
+    assert (client_docs / "concepts" / "client" / "requirements" / ".gitkeep").exists()
 
 
 def test_verify_output_after_full_apply(tmp_path):

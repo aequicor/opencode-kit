@@ -2,6 +2,14 @@
 
 All notable changes to opencode-kit will be documented in this file.
 
+## [1.6.0] — 2026-05-04
+
+### Fixed
+- `create_docs_scaffold` now uses `docs_path` from manifest instead of hardcoded `.vault/`
+- `_build_module_table` respects `docs_path` in docs column (fallback: `.vault/{name}/`)
+- `_build_module_docs_list` respects `docs_path` (fallback: `.vault/{name}/`)
+- `_build_nested_context` uses `docs_path` for `MODULE_DOCS_PATH` variable
+
 ## [1.4.0] — 2026-05-02
 
 ### Added

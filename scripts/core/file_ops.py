@@ -78,20 +78,27 @@ VAULT_GENRE_SUBDIRS = {
 }
 
 
+def _docs_root(m: dict, target: Path) -> Path:
+    docs_path = m.get("docs_path", "")
+    if docs_path:
+        return target / docs_path.rstrip("/")
+    return target / ".vault"
+
+
 def create_docs_scaffold(modules: list, target: Path, dry_run: bool) -> list:
     created = []
     for m in modules:
         module_name = m.get("name", "")
-        vault_module_root = target / ".vault"
+        docs_module_root = _docs_root(m, target)
         for genre in VAULT_GENRES:
             for sub in VAULT_GENRE_SUBDIRS.get(genre, []):
-                dir_path = vault_module_root / genre / module_name / sub
+                dir_path = docs_module_root / genre / module_name / sub
                 if not dir_path.exists():
                     created.append(str(dir_path))
                     if not dry_run:
                         dir_path.mkdir(parents=True, exist_ok=True)
                         (dir_path / ".gitkeep").touch()
-        guidelines_libs = vault_module_root / "guidelines" / "libs"
+        guidelines_libs = docs_module_root / "guidelines" / "libs"
         if not guidelines_libs.exists():
             created.append(str(guidelines_libs))
             if not dry_run:

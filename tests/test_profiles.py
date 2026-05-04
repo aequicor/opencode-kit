@@ -105,7 +105,7 @@ class TestMergeProfiles:
 class TestApplyProfilesToManifest:
     def test_profiles_list(self, profiles_dir):
         manifest = {
-            "kit_version": "1.5.0",
+            "kit_version": "1.6.0",
             "project": {"name": "Test"},
             "stack": {
                 "profiles": ["kotlin-jvm-ktor"],
@@ -127,7 +127,7 @@ class TestApplyProfilesToManifest:
 
     def test_legacy_profile_string(self, profiles_dir):
         manifest = {
-            "kit_version": "1.5.0",
+            "kit_version": "1.6.0",
             "project": {"name": "Test"},
             "stack": {
                 "profile": "python-fastapi",
@@ -148,7 +148,7 @@ class TestApplyProfilesToManifest:
 
     def test_manifest_values_override_profiles(self, profiles_dir):
         manifest = {
-            "kit_version": "1.5.0",
+            "kit_version": "1.6.0",
             "project": {"name": "Test"},
             "stack": {
                 "profiles": ["generic"],
@@ -168,13 +168,13 @@ class TestApplyProfilesToManifest:
         assert result["stack"]["lint_command"] == "my-custom-lint"
 
     def test_no_profiles_returns_manifest_unchanged(self, profiles_dir):
-        manifest = {"kit_version": "1.5.0", "stack": {}}
+        manifest = {"kit_version": "1.6.0", "stack": {}}
         result = apply_profiles_to_manifest(manifest, profiles_dir)
         assert result == manifest
 
     def test_strips_profiles_key_from_result(self, profiles_dir):
         manifest = {
-            "kit_version": "1.5.0",
+            "kit_version": "1.6.0",
             "project": {"name": "Test"},
             "stack": {"profiles": ["generic"]},
             "modules": [],

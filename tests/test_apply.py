@@ -35,7 +35,7 @@ from core.version import KIT_VERSION
 # ─────────────────────────────────────────────
 
 MINIMAL_MANIFEST = {
-    "kit_version": "1.5.0",
+    "kit_version": "1.6.0",
     "editors": ["opencode"],
     "project": {"name": "Test Project", "description": "A test project"},
     "stack": {
@@ -113,6 +113,25 @@ def test_build_context_module_table():
     assert "app" in ctx["MODULE_TABLE"]
     assert ":app" in ctx["MODULE_TABLE"]
     assert ".vault/app/" in ctx["MODULE_TABLE"]
+
+
+def test_build_context_module_table_uses_docs_path():
+    manifest = dict(MINIMAL_MANIFEST)
+    manifest["modules"] = [
+        {
+            "name": "app",
+            "gradle_module": ":app",
+            "source_root": "app/src/main/kotlin/",
+            "test_root": "app/src/test/kotlin/",
+            "docs_path": "docs/app/",
+            "responsibility": "Main application",
+        }
+    ]
+    ctx = build_context(manifest)
+    assert "app" in ctx["MODULE_TABLE"]
+    assert "docs/app/" in ctx["MODULE_TABLE"]
+    assert "MODULE_DOCS_LIST" in ctx
+    assert "docs/app/" in ctx["MODULE_DOCS_LIST"]
 
 
 def test_build_context_forbidden_list():
@@ -560,6 +579,15 @@ def test_create_docs_scaffold_creates_dirs(tmp_path):
     assert len(created) > 0
     assert (tmp_path / ".vault/concepts/app/requirements/.gitkeep").exists()
     assert (tmp_path / ".vault/guidelines/libs/.gitkeep").exists()
+
+
+def test_create_docs_scaffold_uses_docs_path(tmp_path):
+    modules = [{"name": "app", "source_root": "src/", "test_root": "tests/", "docs_path": "docs/app/"}]
+    created = create_docs_scaffold(modules, tmp_path, dry_run=False)
+    assert len(created) > 0
+    assert (tmp_path / "docs/app/concepts/app/requirements/.gitkeep").exists()
+    assert (tmp_path / "docs/app/guidelines/libs/.gitkeep").exists()
+    assert not (tmp_path / ".vault").exists()
 
 
 def test_create_docs_scaffold_dry_run(tmp_path):

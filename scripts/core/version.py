@@ -1,6 +1,6 @@
 import sys
 
-KIT_VERSION = "1.5.0"
+KIT_VERSION = "1.6.0"
 
 
 def check_kit_version(manifest: dict) -> None:
